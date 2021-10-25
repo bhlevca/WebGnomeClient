@@ -148,6 +148,7 @@ define([
                 obj_type: 'gnome.model.Model',
                 time_step: 900,
                 start_time: moment().add(1, 'hour').format('YYYY-MM-DDTHH:00:00'),
+                lake: 'Lake St. Clair',
                 duration: 172800,
                 map: new MapModel(),
                 outputters: new Backbone.Collection([
