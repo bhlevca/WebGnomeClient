@@ -95,15 +95,15 @@ define([
             runhd.fetch({
                 success: _.bind(function(response){
                     if(response.attributes.code === 0){
-                        $('#model_status').text('HD Model is Running ...')
+                        $('#model_status').text('HD Model is Running ...');
                         $('#model_status').show();
                         $('#run_hd').hide();
                         if (typeof(Worker) !== "undefined") {
                             // Yes! Web worker support!
                             if (typeof(webgnome.model.hdtimer) === "undefined") {
                                 webgnome.model.hdtimer = new Worker("js/session_timer.js");
-                                webgnome.model.hdtimer.onmessage = this.loadHD
-                                console.log('hd timer is started.')
+                                webgnome.model.hdtimer.onmessage = this.loadHD;
+                                console.log('hd timer is started.');
                             }
                         }
                         else {
@@ -111,7 +111,7 @@ define([
                         }
                     }
                     else{
-                        $('#model_status').text(response.attributes.description)
+                        $('#model_status').text(response.attributes.description);
                         $('#model_status').show();
                     }
                 }, this),
@@ -150,7 +150,7 @@ define([
                     if(json_response.error_code && json_response.error_code === -1){                        
                         $('#model_status').show();
                         if(json_response.error_code === 1){
-                            $('#model_status').text('HD Model is Running ...')
+                            $('#model_status').text('HD Model is Running ...');
                         }
                         if(json_response.error_code === -1) {
                             $('#model_status').text('The MIKE HD Model Failed.');    
@@ -165,7 +165,7 @@ define([
                             if (typeof(webgnome.model.hdtimer) !== "undefined") {
                                 webgnome.model.hdtimer.terminate();
                                 webgnome.model.hdtimer = undefined;
-                                console.log('hd timer is terminated.')
+                                console.log('hd timer is terminated.');
                             }
                         }
                         else {
