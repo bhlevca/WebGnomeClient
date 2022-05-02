@@ -1,0 +1,28 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "grunt",
+			"script": "develop",
+			"target": "develop",
+			"path": "",
+			"fileName": "gruntfile.js",
+			"uri": {
+				"$mid": 1,
+				"fsPath": "c:\\MECP\\WebGnome\\WebGnomeClient\\gruntfile.js",
+				"_sep": 1,
+				"external": "file:///c%3A/MECP/WebGnome/WebGnomeClient/gruntfile.js",
+				"path": "/c:/MECP/WebGnome/WebGnomeClient/gruntfile.js",
+				"scheme": "file"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"label": "grunt: develop"
+		}
+	]
+}
