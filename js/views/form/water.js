@@ -52,6 +52,8 @@ define([
                 .prop('selected', 'selected');
             this.$('#fetch-units option[value="' + this.model.get('units').fetch + '"]')
                 .prop('selected', 'selected');
+            this.$('#temp').val(this.model.get('temperature')); //BH
+                
 
             if (!_.isNull(this.model.get('fetch'))) {
                 this.$('#data-source').val('fetch');

@@ -9,17 +9,17 @@ define([
         urlRoot: '/environment/',
         defaults: {
             obj_type: 'gnome.environment.water.Water',
-            temperature: null,
-            salinity: 32,
+            temperature: 10,
+            salinity: 0,
             sediment: 5,
             wave_height: null,
             fetch: null,
             units: {
-                'temperature': 'F',
+                'temperature': 'C',
                 'salinity': 'psu',
                 'sediment': 'mg/l',
-                'wave_height': 'ft',
-                'fetch': 'mi',
+                'wave_height': 'm',
+                'fetch': 'm',
                 'kinematic_viscosity': 'm^2/s',
                 'density': 'kg/m^3'
             },

@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch Chrome",
+            "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
             "name": "Attach by Process ID",
             "processId": "${command:PickProcess}",
             "request": "attach",
@@ -13,17 +20,7 @@
             ],
             "type": "node"
         },
-        {
-            "name": "Python: Current File",
-            "type": "python",
-            "python": "${command:python.interpreterPath}",
-            "env": {"PYTHONPATH": "${workspaceFolder}${pathSeparator}${env:PYTHONPATH}"},
-            "cwd": "${workspaceFolder}",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
+        /*
         {
             "type": "pwa-node",
             "request": "launch",
@@ -34,6 +31,6 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}\\index.html"
-        }
+        }*/
     ]
 }
