@@ -30,6 +30,7 @@ define([
             'click .save': 'save',
             'click .finish': 'finish',
             'click .cancel': 'wizardclose',
+            'click .wizard-cancel': 'wizardcancel',
             'click input': 'selectContents',
             'click .modal-header .gnome-help': 'showHelp',
             'change input:not(.attributes input)': 'update',
@@ -55,6 +56,20 @@ define([
             if (this.help && this.help.ready){
                 this.help.trigger('ready');
             }
+        },
+
+        lockControls: function() {
+            this.$('button').prop('disabled', true);
+            //this.$('.save').prop('disabled', true);
+            //this.$('.next').prop('disabled', true);
+            //this.$('.cancel').prop('disabled', true);
+        },
+
+        unlockControls: function() {
+            this.$('button').prop('disabled', false);
+            //this.$('.save').prop('disabled', false);
+            //this.$('.next').prop('disabled', false);
+            //this.$('.cancel').prop('disabled', false);
         },
 
         stickyFooter: function(){
@@ -217,6 +232,13 @@ define([
             }
         },
 
+        wizardcancel: function(){
+            //New-style cancel function for wizard use. Closes this form, leaving a possible parent form to pick
+            //up the event
+            this.trigger('close');
+            this.close();
+        },
+
         triggerHidden: function(){
             this.trigger('hidden.bs.modal');
         },
@@ -227,10 +249,16 @@ define([
 
         close: function(){
             $(window).off('resize.' + this.className);
+            this.$('.xdsoft_datetimepicker').remove();
             this.$el.off('scroll');
             if(this.model){
                 this.model.off('change', this.renderAttributes, this);
             }
+            if ($('.modal').length === 1 && $('body').hasClass('modal-open')){
+                //special case to undo the modal scroll lock if the save/submit button does not have data-dismiss='modal'
+                $('body').removeClass('modal-open');
+            }
+
             BaseModal.prototype.close.call(this);
         }
     });

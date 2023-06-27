@@ -2,7 +2,7 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    'sweetalert',
+    'views/default/swal',
     'model/gnome'
 ], function($, _, Backbone, swal, GnomeModel){
     'use strict';
@@ -61,25 +61,25 @@ define([
         },
 
         register: function(step){
-            step.on('save', this.next, this);
-            step.on('back', this.prev, this);
-            step.on('wizardclose', this.confirmClose, this);
-            step.on('finish', this.close, this);
+            this.listenTo(step, 'save', _.bind(this.next, this));
+            this.listenTo(step, 'back', _.bind(this.prev, this));
+            this.listenTo(step, 'wizardclose', _.bind(this.confirmClose, this));
+            this.listenTo(step, 'finish', _.bind(this.close, this));
         },
 
         confirmClose: function() {
             if (!this.nonmodelWizard) {
-                swal({
+                swal.fire({
                         title: "Are you sure?",
                         text: "You will lose all the entered model data!",
-                        type: "warning",
+                        icon: "warning",
                         showCancelButton: true,
                         confirmButtonText: "Yes, I am sure",
                         cancelButtonText: "Go back",
                         closeOnConfirm: true,
                         closeOnCancel: true
-                    }).then(_.bind(function(isConfirm) {
-                        if (isConfirm) {
+                    }).then(_.bind(function(loseModelData) {
+                        if (loseModelData.isConfirmed) {
                             webgnome.model = new GnomeModel();
                             webgnome.model.save(null, {validate: false});
                             this.close();

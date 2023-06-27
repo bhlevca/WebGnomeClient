@@ -8,14 +8,13 @@ define([
     'model/visualization/graticule'
 ], function(_, Backbone, d3, BaseModel, moment, Cesium, Graticule) {
     'use strict';
-    var gnomeRelease = BaseModel.extend({
+    var release = BaseModel.extend({
         urlRoot: '/release/',
 
         defaults: {
-            'obj_type': 'gnome.spill.release.PointLineRelease',
-            'end_position': [0, 0, 0],
-            'start_position': [0, 0, 0],
+            'obj_type': 'gnome.spills.release.Release',
             'num_elements': 1000,
+            'custom_positions': [[0, 0, 0],],
             'centroid': [0,0,0]
         },
 
@@ -59,33 +58,23 @@ define([
 
             BaseModel.prototype.initialize.call(this, options);
             this._visObj = this.generateVis();
-            this.listenTo(this, 'change:start_position', this.handleVisChange);
-            this.listenTo(this, 'change:end_position', this.handleVisChange);
-        },
-
-        handleVisChange: function() {
-            var startPin = this._visObj.entities.spillPins[0];
-            var endPin = this._visObj.entities.spillPins[1];
-            startPin.position.setValue(Cesium.Cartesian3.fromDegrees(this.get('start_position')[0], this.get('start_position')[1]));
-            endPin.position.setValue(Cesium.Cartesian3.fromDegrees(this.get('end_position')[0], this.get('end_position')[1]));
-            if (startPin.position.equals(endPin.position)) {
-                endPin.show = false;
-            } else {
-                endPin.show = true;
-            }
+            //this.listenTo(this, 'change:start_position', this.handleVisChange);
+            //this.listenTo(this, 'change:end_position', this.handleVisChange);
         },
 
         generateVis: function(addOpts) {
             //Generates a CustomDataSource that represent release attributes so it may
             //be displayed in a Cesium viewer
+            //addOpts are params to replace the default pin parameters below (such as 'movable')
             if (_.isUndefined(addOpts)) {
                 addOpts = {};
             }
-            var ds = new Cesium.CustomDataSource(this.get('id') + '_pins');
+            var ds = new Cesium.CustomDataSource(this.get('id') + '_points');
             var coll = ds.entities;
-            coll.spillPins = [];
-            var positions = [this.get('start_position'), this.get('end_position')]; //future: this.get('positions')
-            var num_pins = positions.length;
+            coll.releasePoints = [];
+            var positions = this.get('custom_positions');
+            var num_points = positions.length;
+
             var textPropFuncGen = function(newPin) {
                 return new Cesium.CallbackProperty(
                     _.bind(function(){
@@ -98,24 +87,32 @@ define([
                             lon = Graticule.prototype.genDegLabel('lon', loc.longitude);
                             lat = Graticule.prototype.genDegLabel('lat', loc.latitude);
                         }
-                        var ttstr = 'Lon: ' + ('\t' + lon) +
+                        var ttstr;
+                        var sp = webgnome.model.get('spills').findParentOfRelease(this.gnomeModel);
+                        if (sp && sp.get('name')){
+                            ttstr = 'Name: ' + ('\t' + sp.get('name')) +
+                                '\nLon: ' + ('\t' + lon) +
                                 '\nLat: ' + ('\t' + lat);
+                        } else{
+                            ttstr = 'Lon: ' + ('\t' + lon) +
+                                '\nLat: ' + ('\t' + lat);
+                        }
                         return ttstr;
                     }, newPin),
                     true
                 );
             };
-            for (var i = 0; i < num_pins; i++) {
-                var newPin = coll.add(_.extend({
+            for (var i = 0; i < num_points; i++) {
+                var newPt = coll.add(_.extend({
                     position: new Cesium.ConstantPositionProperty(Cesium.Cartesian3.fromDegrees(positions[i][0], positions[i][1])),
                     billboard: {
-                        image: '/img/spill-pin.png',
-                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        image: '/img/tinycrosshair.png',
+                        verticalOrigin: Cesium.VerticalOrigin.CENTER,
                         horizontalOrigin: Cesium.HorizontalOrigin.CENTER
                     },
                     show: true,
                     gnomeModel: this,
-                    model_attr : ['start_position', 'end_position'][i], //future: 'positions',
+                    model_attr : 'custom_positions', //future: 'positions',
                     coordFormat: 'dms',
                     index: i,
                     movable: false,
@@ -131,48 +128,8 @@ define([
                         eyeOffset : new Cesium.Cartesian3(0,0,-5),
                     }
                 }, addOpts));
-                newPin.label.text = textPropFuncGen(newPin);
-                coll.spillPins.push(newPin);
-            }
-
-            var spillLinePositionsCallbackGen = function(p1, p2){
-                return new Cesium.CallbackProperty(
-                    _.partial(function(pin1, pin2) {
-                        return [p1.position._value, p2.position._value];
-                        //return _.pluck(_.pluck(this, 'position'),'_value');
-                    }, p1, p2),
-                    false
-                );
-            };
-
-            var spillLineShowCallbackGen = function(p1, p2) {
-                return new Cesium.CallbackProperty(
-                    _.partial(function(pin1, pin2) {
-                        return pin1.show && pin2.show;
-                    }, p1, p2),
-                    false
-                );
-            };
-
-            coll.spillLineSegments = [];
-            var num_segments = num_pins - 1;
-            for (var j = 0; j < num_segments; j++) {
-                //add polyline between pins
-                coll.spillLineSegments.push(coll.add({
-                    polyline: {
-                        //positions: spillLinePositionsCallbackGen(coll.spillPins[j], coll.spillPins[j+1]),
-                        //positions: new Cesium.ConstantProperty([new Cesium.CallbackProperty(_.bind(function(){return this.position.getValue();}, coll.spillPins[j]), true),
-                        //           new Cesium.CallbackProperty(_.bind(function(){return this.position.getValue();}, coll.spillPins[j+1]), true)]),
-                        //positions: new Cesium.ConstantProperty([coll.spillPins[j].position, coll.spillPins[j+1].position]),
-                        positions: new Cesium.PositionPropertyArray([coll.spillPins[j].position, coll.spillPins[j+1].position]),
-                        show: spillLineShowCallbackGen(coll.spillPins[j], coll.spillPins[j+1]),
-                        followSurface: true,
-                        width: 8.0,
-                        material: new Cesium.PolylineArrowMaterialProperty(Cesium.Color.BLACK),
-                        clampToGround: true
-
-                    },
-                }));
+                newPt.label.text = textPropFuncGen(newPt);
+                coll.releasePoints.push(newPt);
             }
             return ds;
         },
@@ -220,16 +177,6 @@ define([
                 attrs = this.attributes;
             }
 
-            if (parseFloat(attrs.start_position[0]) !== attrs.start_position[0] ||
-                    parseFloat(attrs.start_position[1]) !== attrs.start_position[1]) {
-                return 'Start position must be in decimal degrees.';
-            }
-
-            if (parseFloat(attrs.end_position[0]) !== attrs.end_position[0] ||
-                    parseFloat(attrs.end_position[1]) !== attrs.end_position[1]) {
-                return 'End position must be in decimal degrees.';
-            }
-
             if (!_.isUndefined(webgnome.model) &&
                     !_.isUndefined(webgnome.model.get('map'))) {
                 return this.isReleaseValid(webgnome.model.get('map'));
@@ -237,26 +184,15 @@ define([
         },
 
         isReleaseValid: function(map) {
-            var error = 'Start or End position are outside of supported area. Some or all particles may disappear upon release';
-            var sp = this.get('start_position');
-            var ep = this.get('end_position');
-            var start_within = this.testVsSpillableArea(sp, map) && this.testVsMapBounds(sp, map);
-            var end_within = this.testVsSpillableArea(ep, map) && this.testVsMapBounds(ep, map);
-            if (!start_within || !end_within) {
-                return error;
+            var error = 'At least one release position is outside of supported area. Some or all particles may disappear upon release';
+            var c_pos = this.get('custom_positions');
+            var pos;
+            for(var i = 0; i < c_pos.length; i++){
+                pos = c_pos[i];
+                if (!(this.testVsSpillableArea(pos, map) && this.testVsMapBounds(pos, map))){
+                    return error;
+                }
             }
-        },
-
-        isReleasePoint: function() {
-            var start_point = this.get('start_position');
-            var end_point = this.get('end_position');
-
-            if (start_point[0] !== end_point[0] ||
-                    start_point[1] !== end_point[1]) {
-                return false;
-            }
-
-            return true;
         },
 
         testVsSpillableArea: function(point, map) {
@@ -345,6 +281,6 @@ define([
 
     });
 
-    return gnomeRelease;
+    return release;
 
 });

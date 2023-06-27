@@ -18,7 +18,7 @@ define([
 
         defaults: function() {
             return {
-                obj_type: 'gnome.spill.release.SpatialRelease',
+                obj_type: 'gnome.spills.release.PolygonRelease',
                 num_elements: 1000,
                 features: {},
                 centroid: [0,0,0],
@@ -290,8 +290,16 @@ define([
                                         lon = Graticule.prototype.genDegLabel('lon', loc.longitude);
                                         lat = Graticule.prototype.genDegLabel('lat', loc.latitude);
                                     }
-                                    var ttstr = 'Lon: ' + ('\t' + lon) +
+                                    var ttstr;
+                                    var sp = webgnome.model.get('spills').findParentOfRelease(this.gnomeModel);
+                                    if (sp && sp.get('name')){
+                                        ttstr = 'Name: ' + ('\t' + sp.get('name')) +
+                                            '\nLon: ' + ('\t' + lon) +
                                             '\nLat: ' + ('\t' + lat);
+                                    } else{
+                                        ttstr = 'Lon: ' + ('\t' + lon) +
+                                            '\nLat: ' + ('\t' + lat);
+                                    }
                                     return ttstr;
                                 }, newPin),
                                 true

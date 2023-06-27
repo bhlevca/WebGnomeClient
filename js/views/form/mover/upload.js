@@ -15,13 +15,13 @@ define([
     'views/default/dzone',
     'model/map/bna'
 ], function(_, module, $, Backbone, FormModal, MoverUploadFormTemplate,
-            CatsMover, GridCurrentMover, PyCurrentMover, PyWindMover,
+            CatsMover, c_GridCurrentMover, PyCurrentMover, PyWindMover,
             CatsMoverForm, PyCurrentMoverForm, PyWindMoverForm,
             Dzone, MapBNAModel) {
     var mapUploadForm = FormModal.extend({
         title: 'Upload Current File',
         className: 'modal form-modal upload-form',
-        buttons: '<div class="btn btn-danger" data-dismiss="modal">Cancel</div>',
+        buttons: '<button type="button" class="cancel" data-dismiss="modal">Cancel</div>',
 
         events: function(){
             return _.defaults({
@@ -42,8 +42,8 @@ define([
 
             var max_files = 1;
             var autoProcess = true;
-            if (this.obj_type === "gnome.movers.py_current_movers.PyCurrentMover" ||
-                this.obj_type === "gnome.movers.py_wind_movers.PyWindMover") {
+            if (this.obj_type === "gnome.movers.py_current_movers.CurrentMover" ||
+                this.obj_type === "gnome.movers.py_wind_movers.WindMover") {
                 max_files = 255;
                 autoProcess = false;
             }
@@ -86,8 +86,8 @@ define([
 
                 if (json_response && json_response.obj_type) {
 
-                    if (json_response.obj_type === GridCurrentMover.prototype.defaults().obj_type) {
-                        mover = new GridCurrentMover(json_response, {parse: true});
+                    if (json_response.obj_type === c_GridCurrentMover.prototype.defaults().obj_type) {
+                        mover = new c_GridCurrentMover(json_response, {parse: true});
                         editform = PyCurrentMoverForm; //'New' form should still be compatible with old Mover
                     }
                     else if (json_response.obj_type === CatsMover.prototype.defaults().obj_type) {
@@ -112,27 +112,31 @@ define([
                             form.on('hidden', form.close);
                             form.on('save', _.bind(function(){
                                 webgnome.model.get('movers').add(mover);
-                                if (mover.get('obj_type') === 'gnome.movers.py_current_movers.PyCurrentMover') {
+                                if (mover.get('obj_type') === 'gnome.movers.py_current_movers.CurrentMover') {
                                     webgnome.model.get('environment').add(mover.get('current'));
                                 }
-                                if (mover.get('obj_type') === 'gnome.movers.py_wind_movers.PyWindMover') {
+                                if (mover.get('obj_type') === 'gnome.movers.py_wind_movers.WindMover') {
                                     webgnome.model.get('environment').add(mover.get('wind'));
                                 }
-                                webgnome.model.save();
+                                webgnome.model.save(undefined, {
+                                    success: function(){webgnome.model.get('movers').trigger('sync', mover);}
+                                });
                             }, this));
                             form.render();  
                     } else {
                         webgnome.model.get('movers').add(mover);
-                        if (mover.get('obj_type') === 'gnome.movers.py_current_movers.PyCurrentMover') {
+                        if (mover.get('obj_type') === 'gnome.movers.py_current_movers.CurrentMover') {
                             webgnome.model.get('environment').add(mover.get('current'));
                         }
-                        if (mover.get('obj_type') === 'gnome.movers.py_wind_movers.PyWindMover') {
+                        if (mover.get('obj_type') === 'gnome.movers.py_wind_movers.WindMover') {
                             webgnome.model.get('environment').add(mover.get('wind'));
                         }
-                        webgnome.model.save();
+                        webgnome.model.save(undefined, {
+                            success: function(){webgnome.model.get('movers').trigger('sync', mover);}
+                        });
                     }
-                }
-                else {
+                    this.trigger('success', mover);
+                } else {
                     console.error('No response to file upload');
                 }
                 this.hide();

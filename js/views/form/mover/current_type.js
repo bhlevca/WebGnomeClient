@@ -7,11 +7,12 @@ define([
     'model/movers/cats',
     'model/movers/grid_current',
     'model/movers/py_current',
+    'views/form/mover/goods',
     'views/form/mover/upload',
-    'text!templates/form/mover/type.html'
+    'text!templates/form/mover/current_type.html'
 ], function($, _, module, FormModal, UploadFolder,
-            CatsMover, GridCurrentMover, PyCurrentMover,
-            MoverUploadForm,
+            CatsMover, c_GridCurrentMover, PyCurrentMover,
+            GoodsMoverForm, MoverUploadForm,
             CreateMoverTemplate) {
     var createMoverTypeForm = FormModal.extend({
         className: 'modal form-modal current-form',
@@ -23,6 +24,7 @@ define([
                 'click .gridcurrent': 'gridcurrent',
                 'click .cats': 'cats',
                 'click .py_current': 'py_current',
+                'click .customLocation': 'customLocation',
                 'click .cancel': 'close',
             }, FormModal.prototype.events);
         },
@@ -37,13 +39,14 @@ define([
 
         nextStep: function(obj_type) {
             var uploadForm = new MoverUploadForm({obj_type: obj_type});
+            this.trigger('select', uploadForm);
             uploadForm.render();
             this.hide();
-        },
+        },       
 
         gridcurrent: function() {
-            //Legacy GridCurrentMover
-            this.nextStep(GridCurrentMover.prototype.defaults().obj_type);
+            //Legacy c_GridCurrentMover
+            this.nextStep(c_GridCurrentMover.prototype.defaults().obj_type);
         },
 
         cats: function() {
@@ -53,6 +56,13 @@ define([
         py_current: function() {
             this.nextStep(PyCurrentMover.prototype.defaults.obj_type);
         },
+        
+        customLocation: function(){
+            var customForm = new GoodsMoverForm({size: 'xl', request_type: 'currents'});
+            this.trigger('select', customForm);
+            customForm.render();
+            this.hide();
+        }
     });
 
     return createMoverTypeForm;

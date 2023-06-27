@@ -18,7 +18,7 @@ At 0700 on April 4th, 2017, a collision occurred between a shrimp
 boat and a freighter about 30 miles southeast of Galveston, Texas at
 28° 55.9'N, 94° 21.5'W. Initial reports indicate 315 bbls of IFO 180
 were lost. The National Weather Service marine forecast indicates
-that the winds will be from the southwest at 10-20 knots for the
+that the winds will be from the southwest at 15 knots for the
 next 36 hours.
 
 Approval has been given for the application of dispersants. Corexit
@@ -33,7 +33,7 @@ they will be able to disperse the next day.
 Model Input
 ===========
 
-Begin on the home page by clicking "Fate Wizard" under "weathering only". Or, if you have a previous setup of the model, click the "New" menu and select "Oil Fate Wizard"
+Begin on the home page by clicking "Oil Fate Wizard" under "Weathering Only". Or, from the Setup View, click the "New" menu and select "Oil Fate Wizard".
 
 Scenario Settings
 -----------------
@@ -78,7 +78,7 @@ Water:
 
 Water temperature has significant effects on evaporation rates.
 
-Ideally, you would find a field data for water temp in the region, perhaps from the NDBC web site (for the US):
+Ideally, you would find a field data value for water temp in the region, perhaps from the NDBC web site (for the US):
 
 ``http://www.ndbc.noaa.gov/``
 
@@ -88,7 +88,7 @@ Or use an approximation for the season
 
     #. Click Water
     #. Enter 75.6 and choose F from the popup menu.
-    #. Select 32 (avg. oceanic) from the Salinity popup menu
+    #. Select 32 psu (avg. oceanic) from the Salinity popup menu
     #. Select 5 mg/l (ocean) from the Water Sediment Load popup menu
     #. Leave Wave Height at "Compute from Wind (Unlimited Fetch)"
 
@@ -96,7 +96,7 @@ Or use an approximation for the season
 Wind:
 -----
 
-Winds will be from the southwest at 10-20 knots for the
+Winds will be from the southwest at 15 knots for the
 next 36 hours
 
     #. Click Wind
@@ -106,8 +106,6 @@ next 36 hours
     #. Set the direction to "SW"
 
     #. Set the speed to 15 knots
-
-    #. Adjust the "Speed Uncertainty" slider until you get "9.3 - 19.6"
 
     #. Click Save
 
@@ -124,7 +122,7 @@ Discussion
 extent that dispersants will not work.**
 
 IFO-180's do not normally emulsify, however, the oil may weather and
-become very viscous so that dispersant may be less effective. You
+become very viscous so that dispersants may be less effective. You
 can address this issue by using the Oil Viscosity Graph.
 
  #. Click the Weathering tab to see the oil properties graphs.
@@ -133,6 +131,6 @@ can address this issue by using the Oil Viscosity Graph.
     dispersants will be questionable. Ask your SSC for further guidance.
 
 
-.. |image0| image:: images/dispersant_pict.gif
+.. |image0| image:: images/dispersant_pict.png
    :width: 149px
    :height: 104px

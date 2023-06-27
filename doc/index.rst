@@ -8,16 +8,20 @@ WebGNOME User Manual
 ####################
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    introduction
    basics
-   fate
+   views
    transport
+   fate
    response
-   location_files
-   goods
+   location_files 
+   wizards  
    uncertainty
+   saving
+   goods
+   faq
    references
 
 

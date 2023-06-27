@@ -4,33 +4,31 @@ define([
     'backbone',
     'nucos',
     'moment',
-    'sweetalert',
+    'views/default/swal',
     'model/spill/spill',
     'model/spill/gnomeoil',
     'text!templates/panel/spill.html',
+    'text!templates/panel/time-check-popover.html',
     'views/panel/base',
     'views/form/spill/type',
     'views/form/spill/continue',
     'views/form/spill/spatial',
-    'views/form/oil/library',
     'flot',
     'flottime',
     'flotresize',
     'flotstack',
 ], function($, _, Backbone, nucos, moment, swal,
-            SpillModel, GnomeOil, SpillPanelTemplate, BasePanel,
-            SpillTypeForm, SpillContinueView, SpillSpatialView, OilLibraryView) {
+            SpillModel, GnomeOil, SpillPanelTemplate, TimeCheckPopoverTemplate, BasePanel,
+            SpillTypeForm, SpillContinueView, SpillSpatialView) {
     var spillPanel = BasePanel.extend({
         className: 'col-md-3 spill object panel-view',
 
         events: _.defaults({
-            //'click .substance-info': 'renderOilLibrary',
-            //'click .substance-info .edit': 'renderOilLibrary',
-            'click input[id="spill_active"]': 'spill_active'
+            'click input[id="spill_active"]': 'spill_active',
         }, BasePanel.prototype.events),
 
         models: [
-            'gnome.spill.spill.Spill'
+            'gnome.spills.spill.Spill'
         ],
 
         initialize: function(options) {
@@ -47,8 +45,10 @@ define([
             spillTypeForm.on('select', _.bind(function(form) {
                 form.on('wizardclose', form.close);
                 form.on('save', _.bind(function(model) {
-                    webgnome.model.get('spills').add(form.model);
-                    webgnome.model.save();
+                    webgnome.model.get('spills').add(model);
+                    webgnome.model.save(undefined, {
+                        success: function(){webgnome.model.get('spills').trigger('sync', model);}
+                    });
 
                     if(form.$el.is(':hidden')) {
                         form.close();
@@ -68,7 +68,7 @@ define([
                 return;
             }
             var spillView;
-            if (spill.get('release').get('obj_type') === 'gnome.spill.release.NESDISRelease') {
+            if (spill.get('release').get('obj_type') === 'gnome.spills.release.NESDISRelease') {
                 spillView = new SpillSpatialView({edit:true}, spill);
             } else {
                 spillView = new SpillContinueView(null, spill);
@@ -76,6 +76,7 @@ define([
 
             spillView.on('save', function() {
                 spillView.on('hidden', spillView.close);
+                webgnome.model.save();
             });
 
             spillView.on('wizardclose', spillView.close);
@@ -181,7 +182,43 @@ define([
 
             BasePanel.prototype.render.call(this);
         },
+/*
+        setupTooltips: function(options) {
+            
+            BasePanel.prototype.setupTooltips.call(this, options);
+            var delay = options && options.delay ? options.delay : {show:500, hide: 100};
+            this.$('.time-check').popover({
+                html: true,
+                content: function(){ //this == the span the popover is attached to
+                    var id_ = $(this).parents('.single').attr('data-id');
+                    var spill = webgnome.model.get('spills').findWhere({id: id_});
+                    var validInfo = spill.timeValidStatusGenerator();
+                    var rv = $('<div>');
+                    rv.append($('<div class="ttmsg">').text(validInfo.msg))
+                    rv.append($('<div class="ttinfo">').text(validInfo.info))
+                    if (validInfo.valid !== 'valid'){
+                        rv.append($('<div class="ttcorr">').text('Double click to ' + validInfo.corrDesc))
+                    }
+                    return rv[0].outerHTML;
+                },
+                template: TimeCheckPopoverTemplate.substring(1, TimeCheckPopoverTemplate.length-1), //DIRTY HACK to remove grave chars
+                container: 'body',
+                delay: delay,
+                trigger: 'hover',
+                placement: 'auto top'
+            });
+        },
 
+        timeValidDblClick: function(e) {
+            //fires the time interval corrective function, if any available;
+            var id_ = $(e.currentTarget).parents('.single').attr('data-id');
+            var spill = webgnome.model.get('spills').findWhere({id: id_});
+            validInfo = spill.timeValidStatusGenerator();
+            if (!_.isUndefined(validInfo.correction)){
+                validInfo.correction();
+            }
+        },
+*/
         renderSpillRelease: function(dataset) {
             this.spillPlot = $.plot('.spill .chart .canvas', dataset, {
                 grid: {
@@ -219,26 +256,6 @@ define([
                 needle: false
             });
         },
-
-//         renderOilLibrary: function(e) {
-//             e.preventDefault();
-//             e.stopPropagation();
-//             //this will be bugged
-//             var substance = new GnomeOil();
-//             var oilLib = new OilLibraryView({}, substance);
-// 
-//             oilLib.on('save wizardclose', _.bind(function() {
-//                 if (oilLib.$el.is(':hidden')) {
-//                     oilLib.close();
-//                     webgnome.model.setGlobalSubstance(substance);
-//                 }
-//                 else {
-//                     oilLib.once('hidden', oilLib.close, oilLib);
-//                 }
-//             }, this));
-// 
-//             oilLib.render();
-//         },
 
         calculateSpillAmount: function() {
             var oilAPI;
@@ -354,15 +371,15 @@ define([
             var id = this.getID(e);
             var spill = webgnome.model.get('spills').get(id);
 
-            swal({
+            swal.fire({
                 title: 'Delete "' + spill.get('name') + '"',
                 text: 'Are you sure you want to delete this spill?',
-                type: 'warning',
+                icon: 'warning',
                 confirmButtonText: 'Delete',
                 confirmButtonColor: '#d9534f',
                 showCancelButton: true
-            }).then(_.bind(function(isConfirmed) {
-                if (isConfirmed) {
+            }).then(_.bind(function(deleteSpill) {
+                if (deleteSpill.isConfirmed) {
                     webgnome.model.get('spills').remove(id);
                     webgnome.model.save(null, {
                         validate: false

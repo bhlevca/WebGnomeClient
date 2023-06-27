@@ -5,10 +5,11 @@ define([
     'backbone',
     'router',
     'moment',
-    'sweetalert',
+    'views/default/swal',
     'cesium',
     'socketio',
     'text!../config.json',
+    'collection/goods_requests_collection',
     'model/cache',
     'model/session',
     'model/gnome',
@@ -17,7 +18,7 @@ define([
     'model/environment/waves',
     'views/default/loading',
 ], function($, _, Backbone, Router, moment, swal, Cesium, io,
-            config, Cache, SessionModel, GnomeModel, RiskModel, UserPrefs, WavesModel,
+            config, GoodsRequestCollection, Cache, SessionModel, GnomeModel, RiskModel, UserPrefs, WavesModel,
             LoadingView) {
     'use strict';
     var app = {
@@ -51,18 +52,19 @@ define([
 
             this.monitor = {};
             this.monitor.requests = [];
-
-            swal.setDefaults({'allowOutsideClick': false});
+            
+            this.goodsRequests = new GoodsRequestCollection();
 
             $.ajaxPrefilter(_.bind(function(options, originalOptions, jqxhr) {
                 if (options.url.indexOf('http://') === -1 && options.url.indexOf('https://') === -1) {
                     options.url = webgnome.config.api + options.url;
                     // add a little cache busting so IE doesn't cache everything...
                     options.url += '?' + (Math.random() * 10000000000000000);
-                }
-                else {
-                    // if this request is going somewhere other than the webgnome api we shouldn't enforce credentials.
-                    delete options.xhrFields.withCredentials;
+                } else {
+                    if (options.url.indexOf(webgnome.config.api) === -1){
+                        // if this request is going somewhere other than the webgnome api we shouldn't enforce credentials.                        
+                        delete options.xhrFields.withCredentials;
+                    }
                 }
 
                 // monitor interation to check the status of active ajax calls.
@@ -81,10 +83,10 @@ define([
                                         if ($('.modal').length === 0) {
                                             console.log(req.responseText);
 
-                                            swal({
+                                            swal.fire({
                                                 title: 'Application Error!',
-                                                text: 'An error in the application has occured, if this problem persists please contact support: <a href="mailto:webgnome.help@noaa.gov">webgnome.help@noaa.gov</a><br /><br /><code>' + req.responseText + '</code>',
-                                                type: 'error',
+                                                html: 'An error in the application has occured, if this problem persists please contact support: <a href="mailto:webgnome.help@noaa.gov">webgnome.help@noaa.gov</a><br /><br /><code>' + req.responseText + '</code>',
+                                                icon: 'error',
                                                 confirmButtonText: 'Ok'
                                             });
                                         }
@@ -117,9 +119,13 @@ define([
 
             this.router = new Router();
 
-            new SessionModel(function(){
+            console.log('new SessionModel()...');
+            new SessionModel(function() {
                 // check if there's an active model on the server
                 // if there is attempt to load it and route to the map view.
+
+                //setup socket.io connection with server. This connection should be used throughout the program
+                webgnome.socketConnect();
 
                 webgnome.cache = new Cache(null);
                 var gnomeModel = new GnomeModel();
@@ -145,8 +151,6 @@ define([
                 });
             });
 
-            //setup socket.io connection with server. This connection should be used throughout the program
-            this.socketConnect();
         },
 
         socketConnect: function() {
@@ -159,6 +163,9 @@ define([
                  upgrade: true,
                  withCredentials: true,
                  reconnectionAttempts:10,
+                 query:{
+                     "session_id": localStorage.getItem('session')
+                 }
                 }
             );
 
@@ -169,16 +176,22 @@ define([
             this.socket.on('connect_error', function(msg) {console.log('CONNECT_ERROR'); console.log(msg);});
         },
 
+        getGoodsRequests: _.throttle(function(type, retry){
+            return webgnome.goodsRequests.getRequests(type, retry);
+        }, 2000),
+
         userSessionNotFound: function(msg) {
             if (msg === 'forced close'){
-                swal({
+                swal.fire({
                     title: 'Session Not Found',
                     text: ('Your session was unable to be found.\n' +
                            'Please refresh to receive a new session'),
-                    type: 'warning',
-                    showCancelButton: true,
+                    icon: 'warning',
+                    showCancelButton: false,
                     confirmButtonText: 'Refresh'
                 }).then(_.bind(function(isConfirm) {
+                    console.log("If we cancel, we still refresh.");
+                    console.log("So why even have a cancel button");
                     location.reload(true);
                 }, this));
             } else {
@@ -267,6 +280,19 @@ define([
             }
             else {
                 return moment.unix(seconds).toISOString(true);  // keepOffset
+            }
+        },
+
+        secondsToShortTimeString: function(seconds) {
+            // As above, in shorter format
+            if (seconds === Number.POSITIVE_INFINITY) {
+                return 'inf';
+            }
+            else if (seconds === Number.NEGATIVE_INFINITY) {
+                return '-inf';
+            }
+            else {
+                return moment.unix(seconds).format("kk:mm:ss MMM D, YYYY");  // keepOffset
             }
         },
 
@@ -547,12 +573,11 @@ define([
             var map = {
                 'gnome.model.Model': 'views/form/model',
                 'gnome.maps.map.GnomeMap': 'views/form/map',
-                'gnome.spill.spill.Spill': 'views/form/spill',
-                'gnome.spill.release.PointLineRelease': 'views/form/spill',
-                'gnome.environment.wind.Wind': 'views/form/wind',
+                'gnome.spills.spill.Spill': 'views/form/spill',
+                'gnome.spills.release.PointLineRelease': 'views/form/spill',
+                'gnome.environment.wind.Wind': 'views/form/mover/wind',
                 'gnome.movers.random_movers.RandomMover': 'views/form/random',
-                'gnome.movers.wind_movers.WindMover': 'views/form/windMover',
-                'gnome.movers.current_movers.CatsMover': 'views/form/cats'
+                'gnome.movers.c_current_movers.CatsMover': 'views/form/cats'
             };
 
             return map[obj_type];
@@ -582,10 +607,6 @@ define([
                 config_obj.socketio = config_obj.api;
             }
 
-            if(config_obj.oil_api.match(/^\d*$/)) {
-                config_obj.oil_api = domain + config_obj.oil_api;
-            }
-
             if (typeof(config_obj.session_timeout) === 'string') {
                 /*jshint -W061 */  // eval is evil warning
                 config_obj.session_timeout = eval(config_obj.session_timeout);
@@ -611,53 +632,40 @@ define([
             return false;
         },
 
-        invokeSaveAsDialog: function(file, fileName) {
-            if (!file) {
-                throw 'Blob object is required.';
-            }
-
-            if (!file.type) {
-                try {
-                    file.type = 'video/webm';
-                } catch (e) {}
-            }
-
-            var fileExtension = (file.type || 'video/webm').split('/')[1];
-
-            if (fileName && fileName.indexOf('.') !== -1) {
-                var splitted = fileName.split('.');
-                fileName = splitted[0];
-                fileExtension = splitted[1];
-            }
-
-            var fileFullName = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + fileExtension;
-
-            if (typeof navigator.msSaveOrOpenBlob !== 'undefined') {
-                return navigator.msSaveOrOpenBlob(file, fileFullName);
-            }
-            else if (typeof navigator.msSaveBlob !== 'undefined') {
-                return navigator.msSaveBlob(file, fileFullName);
-            }
-
-            var hyperlink = document.createElement('a');
-            hyperlink.href = URL.createObjectURL(file);
-            hyperlink.download = fileFullName;
-
-            hyperlink.style = 'display:none;opacity:0;color:transparent;';
-            (document.body || document.documentElement).appendChild(hyperlink);
-
-            if (typeof hyperlink.click === 'function') {
-                hyperlink.click();
-            } else {
-                hyperlink.target = '_blank';
-                hyperlink.dispatchEvent(new MouseEvent('click', {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true
-                }));
-            }
-
-            URL.revokeObjectURL(hyperlink.href);
+        invokeSaveAsDialog: function(file) {
+            //Reworked to take a file URL
+            //avoid the problems with window.location.href = xxx
+            var savefunc = function save(blob, status, xhr) {
+                var filename = xhr.getResponseHeader('content-disposition').split('filename=')[1];
+                if(window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveBlob(blob, filename);
+                }
+                else{
+                    const elem = window.document.createElement('a');
+                    elem.href = window.URL.createObjectURL(blob);
+                    elem.download = filename;        
+                    document.body.appendChild(elem);
+                    elem.click();        
+                    window.URL.revokeObjectURL(elem.href);
+                    document.body.removeChild(elem);
+                }
+            };
+            $.get(
+                {url: file,
+                 headers: {
+                    'Access-Control-Allow-Request-Method': 'GET',
+                 },
+                 crossDomain: true,
+                 xhrFields: {
+                   'withCredentials': true,
+                   'responseType': 'blob'
+                 }
+                }
+            ).then(
+                savefunc
+            ).fail(
+                console.error
+            );
         },
 
         initSessionTimer: function(func) {
@@ -716,22 +724,22 @@ define([
                         webgnome.sessionSWAL === false) {
                     webgnome.sessionSWAL = true;
 
-                    swal({
+                    swal.fire({
                         title: 'Session Timed Out',
                         text: ('Your session has been inactive for more than ' +
                                '1 hour.\n' +
                                'The model setup will be automatically deleted\n' +
                                'after 72 hours of no activity.\n' +
                                'Would you like to continue working with this setup?'),
-                        type: 'warning',
+                        icon: 'warning',
                         showCancelButton: true,
                         cancelButtonText: 'Start Over',
                         confirmButtonText: 'Continue Previous',
                         reverseButtons: true
-                    }).then(_.bind(function(isConfirm) {
+                    }).then(_.bind(function(continuePrevious) {
                         webgnome.sessionSWAL = false;
 
-                        if (isConfirm) {
+                        if (continuePrevious.isConfirmed) {
                             // start the timer again
                             webgnome.initSessionTimer(webgnome.continueSession);
                         }
@@ -809,6 +817,7 @@ define([
                 }
             } else {
                 if (wind !== waves.get('wind')){
+                    //default wind isn't the same as waves wind for some reason (waves.wind is null/udf or other obj)
                     waves.set('wind', wind);
                     saveRequired = true;
                 }
@@ -818,6 +827,7 @@ define([
                 saveRequired = true;
             }
             if (this.isUorN(water) && waves.get('water')){
+                //detatch water if unset
                 waves.set('water', null);
                 saveRequired = true;
             }
@@ -828,20 +838,26 @@ define([
                 for (i = 0; i < weatherers.length; i++){
                     w = weatherers[i];
                     if(w.get('on') && w.get('_automanaged')){
+                        //shut off automanaged weatherers
                         w.set('on', false);
                         saveRequired = true;
                     }
                 }
-                if (this.getNonAutomanagedWeatherers().length > 0){
+                if (this.getNonAutomanagedWeatherers().length === 0){
+                    //If no weatherers are manually managed, deactivate weathering
                     this.model.set('weathering_activated', false);
                 }
             } else {
-                this.model.set('weathering_activated', true);
-                for (i = 0; i < weatherers.length; i++){
-                    w = weatherers[i];
-                    if(!w.get('on') && w.get('_automanaged')){
-                        w.set('on', true);
-                        saveRequired = true;
+                //substance exists, so activate weathering
+                if(!this.weatheringExplicitlyDisabled()){
+                    this.model.set('weathering_activated', true);
+                    for (i = 0; i < weatherers.length; i++){
+                        w = weatherers[i];
+                        if(!w.get('on') && w.get('_automanaged')){
+                            //turn on automanaged weatherers
+                            w.set('on', true);
+                            saveRequired = true;
+                        }
                     }
                 }
             }
@@ -916,7 +932,9 @@ define([
             !this.isUorN(waves) &&
             !this.isUorN(water) &&
             !this.isUorN(wind) &&
-            this.windMoverTimeCompliance(wind));
+            this.windMoverTimeCompliance(wind)) ||
+            this.weatheringExplicitlyDisabled();
+            //if weathering is explicitly disabled, it's valid...
         },
 
         windMoverTimeCompliance: function(wind) {
@@ -931,7 +949,7 @@ define([
             } else if (wind.get('obj_type').includes('Wind')) {
                 movers = webgnome.model.get('movers');
                 wm = movers.findWhere({'wind': wind});
-            } else if (wind.get('obj_type').includes('mover') && wind.get('wind')) {
+            } else if (wind.get('obj_type').toLowerCase().includes('mover') && wind.get('wind')) {
                 wm = wind;
             } else {
                 console.error('wind provided is not a Wind or WindMover');
@@ -939,8 +957,7 @@ define([
             //If the windmover does not succeed at time compliance for some reason,
             //the wind shouldn't be used in weathering
             if (wm) {
-                var valid = wm.get('time_compliance');
-                return valid === 'valid';
+                return (wm.isTimeValid() === 'valid' || wm.isTimeValid() === 'semivalid') && wm.get('on');
             }
             return false;
         },
@@ -970,6 +987,35 @@ define([
                 }
             }
             return models;
+        },
+
+        weatheringExplicitlyDisabled: function() {
+            //this function checks if weathering is in an explicitly disabled state.
+            //this state is defined by:
+            //  all weatherers being in manual mode ('_automanaged' == false)
+            //  all weatherers being off
+            //  model.weathering_activate == false
+            var all = function(pv, cv) {return pv && cv;};
+            var weatherers = this.model.get('weatherers').models;
+            var manual = weatherers.map(
+                function(v){return !v.get('_automanaged');}
+            ).reduce(all);
+            var off = weatherers.map(
+                function(v){return !v.get('on');}
+            ).reduce(all);
+            var deactivated = !this.model.get('weathering_activated');
+            return manual && off && deactivated;
+        },
+
+        collectionContains: function(collection, item) {
+            //Tests if the Backbone Collection contains the Model item.
+            //This test is explicit for the item's cid.
+            for(var i = 0; i < collection.models.length; i++){
+                if (collection.models[i].cid === item.cid){
+                    return true;
+                }
+            }
+            return false;
         }
     };
 

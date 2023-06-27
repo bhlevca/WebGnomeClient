@@ -17,21 +17,7 @@ observations will provide more useful information. Similarly, the Location Files
 valuable resource for planning for a potential future spill but need to be modified to
 incorporate actual real-time environmental conditions in the case a spill occurs.
 
-Location File Wizard
-====================
-
-To get started using WebGNOME Location Files, visit:
-http://gnome-stage.orr.noaa.gov/#locations
-
-The Location File Wizard will guide you through setting up a scenario with a
-series of questions. The exact questions depend on the specific region being modeled but may include
-questions about: wind conditions, river flow rates, circulation patterns, and the
-type of spill to be modeled.
-If you need help answering a Wizard question, a Location File Help button is available
-on the Wizard title bar.
-
-The Location File Help topics and User Guides also provide some sources of real-time and historical data
-about the region and more technical information about the Location File development.
+To get started, use the (:doc:`Location File Wizard<wizards>`)
 
 
 Available Location Files
@@ -78,7 +64,7 @@ Atlantic Region
 Gulf of Mexico
 --------------
 
-.. * Galveston Bay | :ref:`User Guide <galveston_bay_tech>`
+* Galveston Bay | :ref:`User Guide <galveston_bay_tech>`
 
 * Lower Mississippi River | :ref:`User Guide <lower_mississippi_river_tech>`
 
@@ -105,6 +91,12 @@ International
 -------------
 
 * Apra Harbor, Guam | :ref:`User Guide <apra_harbor_tech>`
+
+* Panama Canal Atlantic | :ref:`User Guide <panama_canal_atlantic_tech>`
+
+* Panama Canal Gatun Lake | :ref:`User Guide <panama_canal_gatun_lake_tech>`
+
+* Panama Canal Pacific | :ref:`User Guide <panama_canal_pacific_tech>`
 
 * ROPME Sea (Persian/Arabian Gulf) | :ref:`User Guide <ropme_sea_area_tech>`
 

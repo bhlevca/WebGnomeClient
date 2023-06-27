@@ -50,7 +50,7 @@ define([
             var views = webgnome.router.views;
             for (var i = 0; i < views.length; i++) {
                 if (views[i].module && views[i].module.id) {
-                    if (views[i].module.id === 'views/model/fate') {
+                    if (views[i].module.id === 'views/model/fate/fate') {
                         webgnome.cache.rewind(true);
                         views[i].autorun(false);
                         views[i].stopListening(webgnome.cache, 'step:received');
@@ -66,7 +66,7 @@ define([
             var views = webgnome.router.views;
             for (var i = 0; i < views.length; i++) {
                 if (views[i].module && views[i].module.id) {
-                    if (views[i].module.id === 'views/model/fate') {
+                    if (views[i].module.id === 'views/model/fate/fate') {
                         views[i].autorun(true);
                     }
                 }
@@ -179,8 +179,9 @@ define([
             }, payload);
 
             this.listenTo(this.progressModal, 'ready', _.bind(function(){
-                this.close();
+                this.hide();
             }, this));
+            this.listenTo(this.progressModal, 'close', _.bind(this.close, this));
             this.progressModal.render();
         },
 

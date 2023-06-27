@@ -2,14 +2,18 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    'sweetalert',
+    'views/default/swal',
     'views/default/load',
     'text!templates/default/index.html',
     'views/wizard/adios',
     'views/wizard/gnome',
-    'views/form/oil/library',
-    'model/gnome'
-], function($, _, Backbone, swal, LoadView, IndexTemplate, AdiosWizard, GnomeWizard, OilLibraryView, GnomeModel){
+    'views/wizard/ofs',
+    'model/gnome',
+    'views/form/mover/goods',
+    'views/form/spill/type',
+    'views/form/water',
+    'views/form/mover/wind_type'
+], function($, _, Backbone, swal, LoadView, IndexTemplate, AdiosWizard, GnomeWizard, OFSWizard, GnomeModel, GoodsMoverForm, SpillTypeForm, WaterForm, WindTypeForm){
     'use strict';
     var indexView = Backbone.View.extend({
         className: 'page home',
@@ -21,7 +25,8 @@ define([
             'click .gnome-wizard': 'gnome',
             'click .doc': 'doc',
             'click .roc': 'roc',
-            'click .oillib': 'oillib'
+            'click .oillib': 'oillib',
+            'click .ofs': 'ofs',
         },
 
         initialize: function(){
@@ -38,16 +43,16 @@ define([
         setup: function(e){ 
             e.preventDefault();
             if (webgnome.hasModel()){
-                swal({
+                swal.fire({
                     title: 'Previous Model Setup Found',
                     text:'Choose to continue with your previous scenario or start setting up a new model.',
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
                     cancelButtonText: 'Continue Previous',
                     confirmButtonText: 'New Model',
                     reverseButtons: true
-                }).then(_.bind(function(isConfirm){
-                    if(isConfirm){                                       
+                }).then(_.bind(function(continuePrevious) {
+                    if (continuePrevious.isConfirmed) {
                         webgnome.model = new GnomeModel({
                             mode: 'gnome',
                             name: 'Model',
@@ -63,9 +68,21 @@ define([
             } else {
                 webgnome.router.navigate('config', true);
             }
-            
-            
         },
+
+        ofs: function(e) {
+            e.preventDefault();
+            webgnome.model = new GnomeModel({name: 'Model'});
+            webgnome.ofsWizard = new OFSWizard();
+            webgnome.ofsWizard.listenToOnce(webgnome.router, 'route:config', _.bind(function(){
+                //this.listenToOnce(webgnome.model, 'save', _.bind(function(){
+                    this.listenToOnce(webgnome.router.views[0], 'layout', _.bind(function(){
+                        this.setup();
+                        
+                    }, webgnome.ofsWizard));
+                },webgnome.ofsWizard));
+            webgnome.router.navigate('config', true);
+            },  
         
         // setup: function(e) {
             // e.preventDefault();
@@ -87,12 +104,6 @@ define([
         
         oillib: function(e){
             window.open('https://adios.orr.noaa.gov', '_blank');
-            /*var oillib = new OilLibraryView();
-            oillib.on('save wizardclose', _.bind(function(){
-                oillib.close();
-            }, this));
-            oillib.render();
-            oillib.$el.addClass('viewer');*/
         },
 
         roc: function(e){

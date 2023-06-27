@@ -1,5 +1,6 @@
 <div class="intro">
     <div class="container">
+    
         <div class="row">
             <div class="title">
                 <img class="webgnome_logo" src="img/WebGNOME_logo_short.png"> (BETA)
@@ -8,17 +9,21 @@
 
         <div class="row">
                 <div class="col-md-8">
-                    <div class="alert alert-danger">
-                        <b>September 2021 Updates</b>
-                        <br></br>
-                        <ul>
-                        <li>A change to the workflow for loading oils has been implemented. To model oil weathering processes, the necessary oil information can be downloaded from the <a href="http://adios.orr.noaa.gov" target="_blank"> NOAA ADIOS Oil Database</a>. This database is maintained by NOAA and that data is currently undergoing QA/QC. There is a "GNOME Suitable" flag which indicates which oils have sufficient data to be used for weathering algorithms. The data format is JSON which can be read with any text editor. Users can now also write their own custom JSON files with oil properties for use in WebGNOME.</li>
-
-                        <li>Spills can now be initialized directly from <a href="https://www.ospo.noaa.gov/Products/ocean/marinepollution/" target="_blank">
-                        NOAA/NESDIS Marine Pollution Surveillance Reports</a> or other shapefiles containing valid polygons. Individual polygons can contain differential amounts of particles representing different thickness classifications.
-                        </li>
-
-                        </ul>                       
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <h4>About</h4>
+                        </div>
+                        <div class="panel-footer">
+                            <p>
+                            WebGNOME is a publicly available oil spill trajectory and fate model that simulates oil movement
+                            and weathering due to winds and currents. WebGNOME was developed by the NOAA Office of Response
+                            and Restoration (OR&amp;R) Emergency Response Division for use in oil spill response.</p>
+                            <p>
+                            To use WebGNOME, you describe a spill scenario by entering information into the program and
+                            potentially uploading files with ocean currents, wind forecasts, and shoreline information.
+                            For examining the fate of spilled oil, a specific oil can be selected from a database
+                            containing hundreds of different crude oils and refined products. Select from various start-up modes below depending on your spill scenario.</p>  
+                        </div>
                     </div>
 
                 </div>
@@ -28,15 +33,15 @@
                             <h4>Useful Links</h4>
                         </div>
                         <div class="panel-footer">
-                            <ul>
-                            <li><a href="https://response.restoration.noaa.gov/gnome"  target="_blank">
-                            <strong>Download the operational NOAA oil modeling application GNOME.</strong></a></li>
+                            <ul>                            
                             <li><a href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome-suite-oil-spill-modeling.html"  target="_blank">
-                            <strong>Learn more about the GNOME modeling suite.</strong></a></li>
+                            <strong>Learn more about NOAA's oil spill modeling tools.</strong></a></li>
                             <li><a href="https://gnome.orr.noaa.gov/goods"  target="_blank">
                             <strong>Find currents and wind data to use in GNOME.</strong></a></li>
                             <li><a href="https://github.com/NOAA-ORR-ERD/PyGnome"  target="_blank">
                             <strong>Run advanced simulations using a Python scripting interface (PyGNOME).</strong></a></li>
+                            <li><a href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html"  target="_blank">
+                            <strong>Download the Desktop GNOME (legacy version).</strong></a></li>
                             </ul>
                         </div>
                     </div>
@@ -58,6 +63,7 @@
                     <div class="panel-footer">
                         <p>Learn which startup mode is right for you or find information about specific features in the
                         WebGNOME User Manual. </p>
+						&nbsp
                         <a href="#" class="doc btn btn-warning btn-block"><span class="glyphicon glyphicon-question-sign"> </span> WebGNOME User Manual</a>
                     </div>
                 </div>
@@ -70,23 +76,26 @@
                     <div class="panel-footer">
                         <p>Choose from 27 different Location Files, which contain pre-packaged information about tides,
                         currents, and shorelines for the region.</p>
+						&nbsp
                         <!-- <a href="#" class="gnome-wizard btn btn-primary btn-block"><span class="glyphicon glyphicon-flash"> </span> GNOME Wizard</a> -->
                         <a href="#" class="location btn btn-primary btn-block"><span class="glyphicon glyphicon-map-marker"> </span> Load a Location</a>
                     </div>
                 </div>
             </div>
+            
             <div class="col-md-3">
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <h4>Custom Location</h4>
-                    </div>
-                    <div class="panel-footer">
-                        <p>Create a custom scenario by uploading shoreline, winds, and/or current data.
-                        Learn more in the WebGNOME User Manual. </p>
-                        <a href="#" class="advanced btn btn-primary btn-block"><span class="glyphicon glyphicon-wrench"> </span> Manual Setup</a>
-                    </div>
-                </div>
+             <div class="panel panel-default">
+                 <div class="panel-body">
+                     <h4>Use Operational Forecasts</h4>
+                 </div>
+                 <div class="panel-footer">
+                     <p><b>Under development!!</b><br> Set up WebGNOME using environmental inputs from NOAA's Operational Forecast Systems (OFS) or other supported models.</p>
+                     </p>
+                     <a href="#" class="ofs btn btn-primary btn-block"><span class="glyphicon glyphicon-th-list"> </span> Choose a Model</a>
+                 </div>
+             </div>
             </div>
+                        
             <div class="col-md-3">
                 <div class="panel panel-default">
                     <div class="panel-body">
@@ -103,13 +112,27 @@
         </div>
 
         <div class="row">
-            <div class="col-md-6">
+        
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <h4>Custom Location</h4>
+                    </div>
+                    <div class="panel-footer">
+                        <p>Begin with an empty model and create a custom scenario by uploading files with shoreline data, winds, and current models manually.
+                        Learn more in the WebGNOME User Manual. </p>
+                        <a href="#" class="advanced btn btn-primary btn-block"><span class="glyphicon glyphicon-wrench"> </span> Manual Setup</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
                 <div class="panel panel-default">
                     <div class="panel-body">
                         <h4>Weathering Only</h4>
                     </div>
                     <div class="panel-footer">
-                        <p>WebGNOME supports scenarios that consider only the weathering of the oil (similar to the previous NOAA ADIOS model).
+                        <p>WebGNOME supports scenarios that consider only the weathering of the oil.
                         Use this startup wizard to quickly estimate an oil budget without entering details on the incident location or currents.</p>
                         <a href="#" class="adios-wizard btn btn-primary btn-block"><span class="glyphicon glyphicon-tint"> </span> Oil Fate Wizard</a>
                     </div>
@@ -129,41 +152,32 @@
                 <!-- </div> -->
             <!-- </div> -->
 
-
-          <div class="col-md-6">
+          <div class="col-md-4">
               <div class="panel panel-default">
                   <div class="panel-body">
                       <h4>ADIOS Oil Database</h4>
                   </div>
                   <div class="panel-footer">
                       <p>The ADIOS Oil Database includes physical and chemical properties for hundreds of oils.
-                      Oils can be selected and downloaded from this database for use in WebGNOME. Use this link to browse the oil
-                      database. </p>
+                      Oils can be selected and downloaded from this database for use in WebGNOME. </p>
                       <a href="#" class="btn btn-primary btn-block oillib"><span class="glyphicon glyphicon-th-list"> </span> Oil Library</a>
                   </div>
               </div>
          </div>
-        <!--<a href="/goods" class=" btn btn-warning btn-block"><span class="glyphicon glyphicon-globe"> </span> GOODS</a>-->
 
     </div>
-    <div class=row>
-        <div class="col-md-12">
-        <p>
-        WebGNOME is a publicly available oil spill trajectory and fate model that simulates oil movement
-        and weathering due to winds and currents. WebGNOME was developed by the NOAA Office of Response
-        and Restoration (OR&amp;R) Emergency Response Division for use in oil spill response.</p>
-        <p>
-        To use WebGNOME, you describe a spill scenario by entering information into the program and
-        potentially uploading files with ocean currents, wind forecasts, and shoreline information.
-        For examining the fate of spilled oil, a specific oil can be selected from a database
-        containing hundreds of different crude oils and refined products.</p>   
-        <p>
-        <b>The WebGNOME application is a draft working product distributed solely for
-        pre-dissemination peer review under applicable information quality guidelines.
-        It should not be used for any other purpose. It has not been formally released
-        and does not represent, and should not be construed to represent,
-        the official forecast of NOAA on spill behavior. It is under active development, and may be unavailable or unstable at any time.</b>
-        </p> 
+    
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-warning">
+                    The WebGNOME application is a draft working product distributed solely for
+                    pre-dissemination peer review under applicable information quality guidelines.
+                    It should not be used for any other purpose. It has not been formally released
+                    and does not represent, and should not be construed to represent,
+                    the official forecast of NOAA on spill behavior. It is under active development, and may be unavailable or unstable at any time.
+                </div>
+            </div>
         </div>
+        
     </div>
 </div>

@@ -2,7 +2,7 @@ define([
     'underscore',
     'jquery',
     'backbone',
-    'sweetalert',
+    'views/default/swal',
     'views/panel/base',
     'views/form/diffusion',
     'text!templates/panel/diffusion.html',
@@ -42,6 +42,7 @@ define([
 
             form.on('save', function(){
                 form.on('hidden', form.close);
+                webgnome.model.save();
             });
             form.on('wizardclose', form.close);
 
@@ -52,6 +53,12 @@ define([
             var diffusion = webgnome.model.get('movers').filter(function(model){
                 return model.get('obj_type') === 'gnome.movers.random_movers.RandomMover';
             });
+
+            if (diffusion.length === 0) {
+                diffusion = webgnome.model.get('movers').filter(function(model){
+                    return model.get('obj_type') === 'gnome.movers.random_movers.IceAwareRandomMover';
+                });
+            }
 
             var compiled = _.template(DiffusionPanelTemplate)({
                 diffusion: diffusion
@@ -74,15 +81,15 @@ define([
             var id = this.getID(e);
             var diffusion = webgnome.model.get('movers').get(id);
 
-            swal({
+            swal.fire({
                 title: 'Delete "' + diffusion.get('name') + '"',
                 text: 'Are you sure you want to delete this diffusion?',
-                type: 'warning',
+                icon: 'warning',
                 confirmButtonText: 'Delete',
                 confirmButtonColor: '#d9534f',
                 showCancelButton: true
-            }).then(_.bind(function(isConfirmed){
-                if (isConfirmed) {
+            }).then(_.bind(function(deleteDiffusion) {
+                if (deleteDiffusion.isConfirmed) {
                     webgnome.model.get('movers').remove(id);
                     webgnome.model.save(null, {
                         validate: false

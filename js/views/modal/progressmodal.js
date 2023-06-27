@@ -71,13 +71,17 @@ define([
         }, 100),
 
         requestOutputFile(filename) {
-            this.$('.modal-header > h4').text('Retreiving output files...');
+            this.$('.modal-header > h4').text('Retrieving output files...');
             console.log('model complete! requesting zip with output files');
             this.$('.cancel').addClass('disabled');
-            window.location.href = webgnome.config.api + '/ws_export?filename=' + filename;
+            webgnome.invokeSaveAsDialog(webgnome.config.api + '/user_files?filename=' + JSON.stringify(filename));
             this.stopListening(webgnome.cache);
-            webgnome.cache.rewind(true);
-            setTimeout(_.bind(function() {webgnome.cache.rewind(); this.hide();}, this), 2000);
+            setTimeout(_.bind(function() {
+                webgnome.cache.rewind(true);
+                this.liftContextualLockouts();
+                this.trigger('close');
+                this.close();
+            }, this), 2000);
         },
 
         cancelRun: function(e) {
@@ -105,7 +109,7 @@ define([
             var views = webgnome.router.views;
             for (var i = 0; i < views.length; i++) {
                 if (views[i].module && views[i].module.id) {
-                    if (views[i].module.id === 'views/model/fate') {
+                    if (views[i].module.id === 'views/model/fate/fate') {
                         views[i].autorun(true);
                     }
                 }

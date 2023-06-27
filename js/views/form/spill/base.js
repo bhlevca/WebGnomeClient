@@ -4,10 +4,9 @@ define([
     'backbone',
     'nucos',
     'moment',
-    'sweetalert',
+    'views/default/swal',
     'views/default/dzone',
     'views/modal/form',
-    'views/form/oil/library',
     'views/form/spill/map',
     'views/form/oil/oilinfo',
     'text!templates/form/spill/substance.html',
@@ -20,13 +19,13 @@ define([
     'jqueryDatetimepicker',
     'bootstrap'
 ], function($, _, Backbone, nucos, moment, swal, Dzone, 
-            FormModal, OilLibraryView, MapFormView, OilInfoView,
+            FormModal, MapFormView, OilInfoView,
             SubstanceTemplate, NonWeatheringSubstanceTemplate, PositionSingleTemplate,
             PositionDoubleTemplate, WindageTemplate, GnomeOil, NonWeatheringSubstance) {
     'use strict';
     var baseSpillForm = FormModal.extend({
 
-        buttons: '<button type="button" class="cancel" data-dismiss="modal">Cancel</button><button type="button" class="delete">Delete</button><button type="button" class="save">Save</button>',
+        buttons: '<button type="button" class="cancel" data-dismiss="modal">Cancel</button><button type="button" class="save">Save</button>',
         mapShown: false,
         spillToggle: false,
 
@@ -40,7 +39,7 @@ define([
                 'keyup .input-sm': 'emulsionUpdate',
                 'change .input-sm': 'emulsionUpdate',
                 'click .delete': 'deleteSpill',
-                'show.bs.modal': 'renderSubstanceInfo',
+                //'show.bs.modal': 'renderSubstanceInfo',
                // 'show.bs.modal': 'renderPositionInfo',
                 'click .oil-cache': 'clickCachedOil',
                 'click .reload-oil': 'reloadOil',
@@ -109,6 +108,7 @@ define([
 
             this.renderPositionInfo();
             this.renderWindageInfo();
+            this.renderSubstanceInfo();
 
             this.$('#datetime').datetimepicker({
                 format: webgnome.config.date_format.datetimepicker,
@@ -169,28 +169,6 @@ define([
             substance.set('bullwinkle_fraction', original_bullwinkle_fraction);
             substance.set('bullwinkle_time', original_bullwinkle_time);
             this.renderSubstanceInfo(null, substance);
-            //var oilId = this.model.get('substance').get('adios_oil_id');
-            //var oilName = this.model.get('substance').get('name');
-            //var substance = new GnomeOil({adios_oil_id: oilId, name: oilName});
-            //re-fetch the substance from the oil library and set the bullwinkle back to default
-            /*substance.fetch(
-                {
-                    success: _.bind(function(model){
-                        var subs = this.model.get('substance');
-                        subs.set('bullwinkle_time', model.get('bullwinkle_time'));
-                        subs.set('bullwinkle_fraction', model.get('bullwinkle_fraction'));
-                        this.clearError();
-                        this.renderSubstanceInfo(null, subs);
-
-                    }, this),
-                    error: function() {swal({
-                        title: "Error!",
-                        text: "Unable to reset emulsification settings because oil could not be retrieved. Did you set an invalid ADIOS ID?",
-                        type: "error",
-                        closeOnConfirm: true,
-                    });}
-                }
-            );*/
         },
 
         reloadOil: function(e) {
@@ -233,15 +211,15 @@ define([
         },
 
         clickCachedOil: function(e) {
-            swal({
+            swal.fire({
                 title: "Warning!",
                 text: "Switch selected oil to " + e.target.innerText + "?",
-                type: "warning",
+                icon: "warning",
                 showCancelButton: true,
                 confirmButtonText: "Confirm",
                 closeOnConfirm: true
-            }).then(_.bind(function(isConfirm) {
-                if (isConfirm) {
+            }).then(_.bind(function(switchOil) {
+                if (switchOil.isConfirmed) {
                     var oilId = $(e.target).data('adiosId');
                     var cachedOils = JSON.parse(localStorage.getItem('cachedOils'));
                     var substanceModel;
@@ -426,9 +404,10 @@ define([
         renderWindageInfo: function(e) {
 
             var compiled;
-            var windage_init = this.model.getWindageInitializer();
-            var windage_range = windage_init.get("windage_range");
-            var windage_persist_val = windage_init.get("windage_persist");
+            var substance = this.model.get('substance');
+            //var windage_init = this.model.getWindageInitializer();
+            var windage_range = substance.get("windage_range");
+            var windage_persist_val = substance.get("windage_persist");
             
             var windage_persist = true;
             if (windage_persist_val > 0) {
@@ -452,16 +431,16 @@ define([
         
         updateWindageInfo: function(e) {
 
-            var windage_init = this.model.getWindageInitializer();
+            var substance = this.model.get('substance');
+            //var windage_init = this.model.getWindageInitializer();
             
             var windage_low = parseFloat(this.$('#windage_low').val())/100;
             var windage_high = parseFloat(this.$('#windage_high').val())/100;
             var windage_persist = this.$('#windage_persist').val();
             
-            windage_init.set("windage_range",[windage_low,windage_high]);
-            windage_init.set("windage_persist",windage_persist);
-
-
+            substance.set("windage_range",[windage_low,windage_high]);
+            //windage_init.set("windage_range",[windage_low,windage_high]);
+            substance.set("windage_persist",windage_persist);
           
 
         },
@@ -507,35 +486,6 @@ define([
             // this.setCoords();
         },
 
-        initOilLib: function() {
-            if (_.isUndefined(this.oilLibraryView)) {
-                var subs;
-                if (!this.model.get('substance').get('is_weatherable')) {
-                    subs = new GnomeOil();
-                } else {
-                    subs = this.model.get('substance');
-                }
-                this.oilLibraryView = new OilLibraryView({}, subs);
-                this.oilLibraryView.render();
-                this.oilLibraryView.on('hidden', _.bind(function(){
-                    if (!_.isUndefined(subs.get('name'))){
-                        this.model.set('substance', subs);
-                        webgnome.model.setGlobalSubstance(subs);
-                    }
-                    this.show();
-                    this.reloadOil();
-                    this.tabStatusSetter();
-                }, this));
-            }
-            else {
-                this.once('hidden',
-                          this.oilLibraryView.show,
-                          this.oilLibraryView);
-            }
-
-            this.hide();
-        },
-
         initOilInfo: function() {
 
             this.oilInfoView = new OilInfoView({}, this.model.get('substance'));
@@ -546,28 +496,6 @@ define([
         oilSelect: function() {
             window.open('https://adios.orr.noaa.gov', '_blank');
 
-            /*var spills = webgnome.model.get('spills');
-
-            if (this.model.isNew() && spills.length === 0 ||
-                    !this.model.isNew() && spills.length === 1) {
-                this.initOilLib();
-            }
-            else {
-                swal({
-                    title: "Warning!",
-                    text: "Changing the oil here will change it for all spills!",
-                    type: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Select new oil",
-                    cancelButtonText: "Keep original oil",
-                    closeOnConfirm: true,
-                    closeOnCancel: true
-                }).then(_.bind(function(isConfirm) {
-                    if (isConfirm) {
-                        this.initOilLib();
-                    }
-                }, this));
-            }*/
         },
 
          oilLoad: function() {
@@ -578,17 +506,17 @@ define([
                 this.load_oil();
             }
             else {
-                swal({
+                swal.fire({
                     title: "Warning!",
                     text: "Changing the oil here will change it for all spills!",
-                    type: "warning",
+                    icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Select new oil",
                     cancelButtonText: "Keep original oil",
                     closeOnConfirm: true,
                     closeOnCancel: true
-                }).then(_.bind(function(isConfirm) {
-                    if (isConfirm) {
+                }).then(_.bind(function(selectNewOil) {
+                    if (selectNewOil.isConfirmed) {
                         this.load_oil();
                     }
                 }, this));
@@ -607,7 +535,9 @@ define([
                     autoProcessQueue:true,
                     dictDefaultMessage: 'Drop file here to load an oil (or click to navigate). <br>Click the help icon for details on supported file formats.',
                 });
-                this.$('.substance-upload').append(this.dzone.$el);
+                this.$('.substance-upload').append(this.dzone.$el);               
+                this.listenTo(this.dzone, 'addedfile', _.bind(this.lockControls,this));
+                this.listenTo(this.dzone, 'error', _.bind(this.unlockControls, this));
                 this.listenTo(this.dzone, 'upload_complete', _.bind(this.newloaded, this));
             }
         },
@@ -620,12 +550,18 @@ define([
                  'session': localStorage.getItem('session')
                 }
             ).done(_.bind(function(response) {
+                    var old_subs = this.model.get('substance');
+                    var windage_range = old_subs.get("windage_range");
+                    var windage_persist = old_subs.get("windage_persist");
                     var substance = new GnomeOil(JSON.parse(response), {parse: true});
+                    substance.set("windage_range",windage_range);
+                    substance.set("windage_persist",windage_persist);
                     this.model.set('substance', substance);
                     webgnome.model.setGlobalSubstance(substance);
                     this.$el.html('');
                     this.render();
-                    this.reloadOil();
+                    //this.reloadOil();
+                    //this.hide();
                 }, this)
             ).fail(
                 _.bind(this.dzone.reset, this.dzone)
@@ -634,24 +570,37 @@ define([
 
         setSubstanceNonWeathering: function() {
             var substance = this.model.get('substance');
+            var windage_range = substance.get("windage_range");
+            var windage_persist = substance.get("windage_persist");
 
             if (substance.get('is_weatherable')) {
-                swal({
+                swal.fire({
                     title: "Warning!",
                     text: "Setting the substance to non-weathering will delete the currently entered substance!",
-                    type: "warning",
+                    icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Set to Non-weathering",
                     cancelButtonText: "Cancel",
                     closeOnConfirm: true,
                     closeOnCancel: true
-                }).then(_.bind(function(isConfirm) {
-                    if (isConfirm) {
+                }).then(_.bind(function(setNonWeathering) {
+                    if (setNonWeathering.isConfirmed) {
+                        var subs = new NonWeatheringSubstance();
+                        subs.set("windage_range",windage_range);
+                        subs.set("windage_persist",windage_persist);
                         if (webgnome.model.get('spills').length > 0) {
-                            webgnome.model.setGlobalSubstance(new NonWeatheringSubstance());
+                            //webgnome.model.setGlobalSubstance(new NonWeatheringSubstance());
+                            subs.save(undefined,{success:_.bind(function(subs){
+                                webgnome.model.setGlobalSubstance(subs);
+                                this.model.set('substance', subs);
+                                this.renderSubstanceInfo();
+                                this.unlockControls();
+                            }, this)});
+                            this.lockControls();
                         }
                         else {
-                            this.model.set('substance', new NonWeatheringSubstance());
+                            //this.model.set('substance', new NonWeatheringSubstance());
+                            this.model.set('substance', subs);
                             this.model.save();
                         }
 
@@ -681,7 +630,7 @@ define([
         },
 
         initMapModal: function() {
-            this.mapModal = new MapFormView({}, this.model.get('release'));
+            this.mapModal = new MapFormView({size: 'xl'}, this.model.get('release'));
             this.mapModal.render();
 
             this.mapModal.on('hidden', _.bind(function() {
@@ -763,15 +712,15 @@ define([
         deleteSpill: function() {
             var id = this.model.get('id');
 
-            swal({
+            swal.fire({
                 title: 'Delete "' + this.model.get('name') + '"',
                 text: 'Are you sure you want to delete this spill?',
-                type: 'warning',
+                icon: 'warning',
                 confirmButtonText: 'Delete',
                 confirmButtonColor: '#d9534f',
                 showCancelButton: true
-            }).then(_.bind(function(isConfirmed) {
-                if (isConfirmed) {
+            }).then(_.bind(function(deleteSpill) {
+                if (deleteSpill.isConfirmed) {
                     webgnome.model.get('spills').remove(id);
                     webgnome.model.save();
                     this.on('hidden', _.bind(function() {
@@ -803,8 +752,8 @@ define([
                 this.oilInfoView.close();
             }
 
-            if (!_.isUndefined(this.oilLibraryView)) {
-                this.oilLibraryView.close();
+            if (this.dzone) {
+                this.dzone.close();
             }
 
             FormModal.prototype.close.call(this);

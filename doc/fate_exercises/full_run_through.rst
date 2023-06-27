@@ -7,9 +7,7 @@ A Complete Annotated Example
 Incident
 ========
 
-You need something to model in order to try it out :-)
-
-Using a simple example to start:
+We use a simple example to start:
 
  * A leak developed in an offshore platform off the coast of Louisiana.
 
@@ -27,11 +25,11 @@ Using a simple example to start:
 
     Wednesday: Southeast winds 5 to 10 knots. Seas 1 to 2 feet.
 
-    Wednesday:  NightSouth winds 5 to 10 knots. Seas 1 to 2 feet.
+    Wednesday Night:  South winds 5 to 10 knots. Seas 1 to 2 feet.
 
     Thursday: South winds 5 to 10 knots. Seas 1 to 2 feet.
 
-    Thursday: NightSouth winds 10 to 15 knots. Seas 1 to 3 feet.
+    Thursday Night: South winds 10 to 15 knots. Seas 1 to 3 feet.
 
     Friday: Southwest winds 10 to 15 knots. Seas 2 to 4 feet.
             Slight chance of showers and thunderstorms.
@@ -57,8 +55,6 @@ Scenario Settings
   #. Set the model duration to 3 days -- usually there is no need to run the model longer than 5 days or so.
   #. Click Save
 
-.. _selecting_an_oil:
-
 Selecting an Oil:
 -----------------
 
@@ -68,58 +64,11 @@ The ADIOS Oil Database provides a database of many oils with extensive propertie
 
   * Click Oil -- This will open the ADIOS Oil Database in a new tab.
 
-There are multiple ways to find an appropriate oil in the database.
+This will show a complete list of the database oils. Click the "Suitable for GNOME" checkbox. Filter the list using "Medium Crude" in the Labels filter and "NOS Crude Oil" in the Type. Clicking on an oil name in the list will select that oil. 
+To select the oil to use in GNOME click the "Download" button.
 
-The list view presents the records that meet the current selection criteria -- this is the full set initially. This list includes a few of the records' fields:
-
-  - **Name:** the name of the oil
-  - **Location:** the region the oil came from
-  - **API:** The oil's API Gravity (density)
-  - **Score:** an estimate of the completeness of the record,
-    records with higher quality scores have more data, and will
-    result in more precise forecasts in the model
-
-
-The list is sorted by default alphabetically by name, but if you click on the column headers, you can see it sorted by that field.
-
-
-The Search Box
-..............
-
-If you type any text in the search box, the list will be reduced to those records that have the text in any part of the name or location or oil product type. So typing in "IFO" will result in finding oils from Cal**IFO**rnia, as well as any oil with "IFO" in the name, and all oils in the "Intermediate Fuel Oil" Category.
-
-Type
-..........
-
-The oils in the database are all sorted into various types of oils: crude or refined products, etc. If a type is selected, only oils that fit that type will be displayed. Some of the types are broad and overlapping, for instance, in "Distillate Fuel Oil", you will find both Gasoline and Kerosene.
-
-If you are looking for a product that fits within a certain type of oil, selecting that type will help you refine your search quickly.
-
-
-API slider
-..........
-
-The API slider lets you set a range you want of the oil's API gravity. Only oils that fall within that range will be displayed.
-
-
-Selecting an Oil
-................
-
-Clicking on the oil name in the list will select that oil. The final selection is recorded (and the form closed) when you click the "Download" button.
-
-
-Seeing the Complete Oil Record
-..............................
-
-If you move the mouse over a record, a blue button labeled "more" will show on the right hand side. Clicking that button brings you to the Oil's properties page.
-
-There are three tabs on the page:
-
- * **General Info:**  Names, categories, reference, etc.
- * **Properties:** The physical properties of the oil.
- * **Distillation:** The distillation cuts of the oil. This shows how the oil is broken down by boiling point -- important for computing the evaporation of the oil.
-
-**NOTE:** Most oil records are not complete. Any properties that are not included in the record that are needed by the model are estimated.
+There are multiple ways to find an appropriate oil in the database. To learn how to use the interface, see the procedure here:
+:ref:`Selecting an Oil <selecting_an_oil>`.
 
 
 Setting the Spill conditions:
@@ -136,7 +85,7 @@ Instantaneous Release
 .....................
 
   #. Click "Instantaneous Release"
-  #. Set Amount Released the desired quantity
+  #. Set Amount Released to the desired quantity
   #. Make sure to set the units appropriately.
      WebGNOME supports both volume (bbl, gal) and mass (metric ton, kg) units. The density of the oil will be used to convert between them.
   #. Load the oil file you downloaded from the ADIOS Oil Database.
@@ -154,7 +103,7 @@ Continuous Release
 
   #. You can now either:
 
-     * Set the Amount Released the desired quantity -- and the release rate will be computed.
+     * Set the Amount Released to the desired quantity -- and the release rate will be computed.
 
      or
 
@@ -177,10 +126,24 @@ Continuous Release
   #. Click **Save** when you are happy with the settings.
 
 
+Seeing the Gnome Oil Properties
+...............................
+
+If you click on the oil name it brings up the oil's properties page.
+
+There are three tabs on the page:
+
+ * **General Info:**  ADIOS Oil Database ID
+ * **Properties:** The physical properties of the oil.
+ * **Distillation:** The distillation cuts of the oil. This shows how the oil is broken down by boiling point -- important for computing the evaporation of the oil.
+
+**NOTE:** Most oil records are not complete. Any properties that are not included in the record that are needed by the model are estimated.
+
+
 Water:
 ------
 
-The Water setting allow you to set the conditions of the water body the spill is on. This includes water temperature, salinity, sediment load, and wave conditions.
+The Water setting allows you to set the conditions of the water body the spill is on. This includes water temperature, salinity, sediment load, and wave conditions.
 
 Temperature
 ...........
@@ -197,7 +160,7 @@ Or you can use an appropriate estimate for the time of year -- there are some hi
 Salinity and Sediment load
 ..........................
 
-Salinity and Sediment Load effect the rate of OIl Sediment Aggregate formation. IN most cases, you can select an appropriate value from the pick list for fresh, brackish or salt water. If you do know more precise values, they can be set by selecting "other value" and typing in the value.
+Salinity and Sediment Load effect the rate of Oil Sediment Aggregate formation. In most cases, you can select an appropriate value from the pick list for fresh, brackish or salt water. If you do know more precise values, they can be set by selecting "other value" and typing in the value.
 
 For this example, leave the defaults -- suitable for open ocean.
 
@@ -207,7 +170,7 @@ Wave Height
 
 Wave Energy has a strong effect on the dispersion of the oil. If you know the wave height in the region at the time of the spill, you can set it directly. It should be the height of the "Seas" as swell does not drive dispersion very much.
 
-As dispersion is driven primarily by locally generated waves (white capping!) you usually want to us the default setting of "Compute from Wind (unlimited fetch)". However, if the spill is in a fetch-limited region (such as a small bay) then you may want to use "Compute from Wind and Fetch", and then set the fetch.
+As dispersion is driven primarily by locally generated waves (white capping!) you usually want to use the default setting of "Compute from Wind (unlimited fetch)". However, if the spill is in a fetch-limited region (such as a small bay) then you may want to use "Compute from Wind and Fetch", and then set the fetch.
 
 * For this example, the default of "Compute from Wind (unlimited fetch)" is most appropriate.
 
@@ -253,7 +216,7 @@ For the forecast above, every 12 hours is appropriate. You can re-set the specif
 
     To set the records:
 
-    #. Move your mouse over the first time in the list, and click the "pencil" icon to edit it: In this case, the forecast give a range -- "5 to 10 knots". This is typical in a forecast. It is usually best to select a value in the middle of that range.
+    #. Move your mouse over the first time in the list, and click the "pencil" icon to edit it: In this case, the forecast gives a range -- "5 to 10 knots". This is typical in a forecast. It is usually best to select a value in the middle of that range.
 
        #. Type in 7 for the Speed, and SE for direction ( or 135 -- wind from the SE is from 135 degrees from North)
 

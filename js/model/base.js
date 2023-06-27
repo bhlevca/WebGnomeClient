@@ -45,33 +45,53 @@ define([
                     if(_.isArray(embeddedData)){
                         // maintain the existing collection but reset it so it doesn't
                         // keep objects from the default notation on the model
-                        if(this.get(key)){
-                            response[key] = this.get(key);
-                        } else {
-                            response[key] = new Backbone.Collection();
-                        }
-                        response[key].reset([], {silent: true});
+                        var temp = new Backbone.Collection();
 
                         if(!_.isObject(embeddedClass)){
                             // if the embedded class isn't an object it can only have one type of object in
                             // the given collection, so set it.
                             for(var obj in embeddedData){
-                                response[key].add(this.setChild(embeddedClass, embeddedData[obj]), {merge: true});
+                                temp.add(this.setChild(embeddedClass, embeddedData[obj]), {merge: true});
                             }
                         } else {
                             // the embedded class is an object therefore we can assume
                             // that the collection can have several types of objects
                             // I.E. environment with wind and tide, figure out which one we have
                             // by looking at it's obj_type and cast it appropriatly.
-
+                            if(this.get(key)){
+                                response[key] = this.get(key);
+                            } else {
+                                response[key] = new Backbone.Collection();
+                            }
                             for(var obj2 in embeddedData){
                                 if(_.isFunction(embeddedClass[embeddedData[obj2].obj_type])){
-                                    response[key].add(this.setChild(embeddedClass[embeddedData[obj2].obj_type], embeddedData[obj2]), {merge: true});
+                                    //Must pass collection here so the .collection attribute is set to the existing
+                                    //Model's corresponding collection...
+                                    temp.add(
+                                        this.setChild(
+                                            embeddedClass[embeddedData[obj2].obj_type],
+                                            embeddedData[obj2],
+                                            {collection: response[key]}
+                                        ),
+                                        {merge: true}
+                                    );
                                 } else {
-                                    response[key].add(this.setChild(Backbone.Model, embeddedData[obj2]), {merge: true});
+                                    temp.add(
+                                        this.setChild(
+                                            Backbone.Model,
+                                            embeddedData[obj2],
+                                            {collection: response[key]}
+                                        ),
+                                        {merge: true}
+                                    );
                                 }
                             }
                         }
+                        response[key].reset(temp.models); //sets the collection with parsed models in single stroke
+                        //JAH NOTE 1/27/2022
+                        //Although I added this code about setting the collection on the object I now believe it is
+                        //a mistake. The correct way to test if an object is part of a collection is to do a 'contains'
+                        //test, not test collection attribute equality.
                     } else if (_.isObject(embeddedClass) && !_.isFunction(embeddedClass)) {
                         response[key] = this.setChild(embeddedClass[embeddedData.obj_type], embeddedData);
                     } else {
@@ -102,7 +122,8 @@ define([
             return xhr;
         },
 
-        setChild: function(Cls, data){
+        setChild: function(Cls, data, options){
+            options = _.extend({parse: true}, options);
             if(!_.isUndefined(data) && _.has(webgnome.obj_ref, data.id)){
                 var cached_obj = webgnome.obj_ref[data.id];
                 return cached_obj.set(cached_obj.parse(data));
@@ -110,8 +131,11 @@ define([
             if(_.isUndefined(data)){
                 data = {};
             }
-            var obj = new Cls(data, {parse: true});
-            webgnome.obj_ref[data.id] = obj;
+            var obj = new Cls(data, options);
+            if(!_.isUndefined(data.id)){
+                //BECAUSE undefined GETS INTERPRETED AS A STRING KEY? FUCK JAVASCRIPT!!
+                webgnome.obj_ref[data.id] = obj;
+            }
             return obj;
         },
 
