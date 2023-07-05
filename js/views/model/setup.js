@@ -12,6 +12,7 @@ define([
     'views/panel/model',
     'views/panel/wind',
     'views/panel/water',
+    'views/panel/concentration',
     'views/panel/weatherers',
     'views/panel/map',
     'views/panel/diffusion-h',
@@ -24,7 +25,7 @@ define([
     'views/default/timeline',
     'jqueryDatetimepicker'
 ], function($, _, Backbone, BaseView, module, moment, Masonry, AdiosSetupTemplate, FormModal, GnomeModel, ModelPanel,
-    PointWindPanel, WaterPanel, WeathererPanel, MapPanel, DiffusionPanel, CurrentPanel, GriddedWindPanel, SpillPanel, ResponsePanel, RocResponsePanel, BeachedPanel, TimelineView){
+    PointWindPanel, WaterPanel, ConcentrationPanel, WeathererPanel, MapPanel, DiffusionPanel, CurrentPanel, GriddedWindPanel, SpillPanel, ResponsePanel, RocResponsePanel, BeachedPanel, TimelineView){
     'use strict';
     var adiosSetupView = BaseView.extend({
         className: 'page setup',
@@ -73,6 +74,7 @@ define([
                 this.griddedwind = new GriddedWindPanel(),
                 this.wind = new PointWindPanel(),
                 this.water = new WaterPanel(),
+                this.concentration = new ConcentrationPanel(),
                 this.weatherers = new WeathererPanel(),
                 this.map = new MapPanel(),
                 this.diffusion = new DiffusionPanel(),
@@ -87,6 +89,7 @@ define([
                 this.modelpanel.$el,
                 this.wind.$el,
                 this.water.$el,
+                this.concentration.$el,
                 this.weatherers.$el,
                 this.map.$el,
                 this.diffusion.$el,

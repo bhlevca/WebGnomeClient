@@ -6,6 +6,7 @@ define([
     'views/default/swal',
     'model/base',
     'model/cache',
+    'model/concentration',
     'model/map/map',
     'model/map/param',
     'model/map/bna',
@@ -55,7 +56,7 @@ define([
     'collection/spills',
     'model/default_objs'
 ], function($, _, Backbone, moment, swal,
-    BaseModel, Cache,
+    BaseModel, Cache, ConcentrationModel,
     MapModel, ParamMapModel, MapBnaModel, SpillModel, NonWeatheringSubstance,
     TideModel, WindModel, WaterModel, WavesModel, GridCurrentModel, GridWindModel,
     RandomMover, WindMover, PyWindMover,
@@ -84,7 +85,12 @@ define([
             'gnome.outputters.image.IceImageOutput',
             'gnome.outputters.geo_json.TrajectoryGeoJsonOutput'
         ],
+
+        //used to lookup for the constructor of each class. See Line 42 in js/model/base.js
         model: {
+            concentration: {
+                'gnome.concentration.concentration.Concentration': ConcentrationModel
+            },
             spills: {
                 'gnome.spills.spill.Spill': SpillModel
             },
@@ -150,6 +156,7 @@ define([
                 time_step: 900,
                 start_time: moment().add(1, 'hour').format('YYYY-MM-DDTHH:00:00'),
                 lake: 'Lake St. Clair',
+                concentration: new ConcentrationModel(),
                 duration: 172800,
                 map: new MapModel(),
                 outputters: new Backbone.Collection([
@@ -492,6 +499,7 @@ define([
             var duration = moment.duration(millisecsDur).asHours();
             var timeStepTime = moment.duration(millisecsTime).asMinutes();
             var map = this.get('map');
+            var concentration = this.get('concentration');
             var movers = this.get('movers');
             var environment = this.get('environment');
             var weatherers = this.get('weatherers');

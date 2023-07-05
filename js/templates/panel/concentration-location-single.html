@@ -1,0 +1,22 @@
+<div class="panel panel-default complete">
+    <div class="panel-heading">
+        <a class="btn btn-primary btn-xs map-modal pull-right">Place on Map</a>
+        <div class="panel-title">
+            Point of Interest
+        </div>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-sm-6">
+                <label for="start-lat">Latitude</label>
+                <input type="text" class="form-control geo-info start" name="lat" id="start-lat" title="{{ lat_formats }}" autocomplete="off" value="{{ lat }}">
+                <sup class="start-lat-parse"> </sup>
+            </div>
+            <div class="col-md-6">
+                <label for="start-lng">Longitude</label>
+                <input type="text" class="form-control geo-info start" name="lng" id="start-lon" title="{{ lon_formats }}" autocomplete="off" value="{{ lon }}">
+                <sup class="start-lon-parse"> </sup>
+            </div>
+        </div>
+    </div>
+</div>
