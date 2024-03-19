@@ -38,11 +38,11 @@ define([
                     datum = datum.replace(/ /g,"_");
                     _req_data.push(datum);
                 } 
-                if (datum === 'surface_concentration') {
+                if (datum === 'surface_concentration' || datum === 'volumetric_concentration') {
                     this.set('surface_conc', 'kde');
                 }
             }
-            if (_.indexOf(_req_data, 'surface_concentration') === -1) {
+            if (_.indexOf(_req_data, 'surface_concentration') === -1 && _.indexOf(_req_data, 'volumetric_concentration') === -1) {
                 this.set('surface_conc', null);
             }
             _req_data = _req_data.length > 0 ? _.uniq(_req_data) : _req_data;

@@ -89,7 +89,7 @@ define([
         //used to lookup for the constructor of each class. See Line 42 in js/model/base.js
         model: {
             concentration: {
-                'gnome.concentration.concentration.Concentration': ConcentrationModel
+                'gnome.concentration.concentration_location.ConcentrationLocation': ConcentrationModel
             },
             spills: {
                 'gnome.spills.spill.Spill': SpillModel

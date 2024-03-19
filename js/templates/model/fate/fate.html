@@ -59,6 +59,8 @@
             <li><a href="#budget-graph" role="tab" data-toggle="tab">Oil Budget - Graph</a></li>
             <li><a href="#weatherers" role="tab" data-toggle="tab">Weathering</a></li>
             <li><a href="#ics209" role="tab" data-toggle="tab">ICS209</a></li>
+            <li><a href="#concentration-table" role="tab" data-toggle="tab">Concentration - Table</a></li>
+            <li><a href="#concentration-graph" role="tab" data-toggle="tab">Concentration - Graph</a></li>
         </ul>
     </div>
 
@@ -366,6 +368,31 @@
             </div> -->
 
             <div class="col-md-12 ics-table">
+            </div>
+        </div>
+        
+        <div class="tab-pane col-md-12" id="concentration-table">
+            <table id="concentration_output_table" class="table table-striped">
+                <tr><td>
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
+                </td></tr>
+            </table>
+        </div>
+
+        <div class="tab-pane col-md-12" id="concentration-graph">
+            <!-- {{ buttons }} -->
+            <div class="timeline">
+                <div class="chart">
+                    <div class="axisLabel yaxisLabel">{{ units }}</div>
+                    <div class="axisLabel xaxisLabel">{{ time }}</div> 
+                    <div class="canvas"></div>
+                </div>
             </div>
         </div>
     </div>

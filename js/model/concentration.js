@@ -12,8 +12,8 @@ define([
         urlRoot: '/concentration/',
 
         defaults: {
-            'obj_type': 'gnome.concentration.concentration.Concentration',
-            'locations': [[0, 0, 0]]
+            'obj_type': 'gnome.concentration.concentration_location.ConcentrationLocation',
+            'locations': [[0, 0]]
         },
 
         initialize: function(options) {

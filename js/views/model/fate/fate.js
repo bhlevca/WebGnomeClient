@@ -122,7 +122,9 @@ define([
             'sedimentation': 'sedimentation',
             'density': 'avg_density',
             'emulsification': 'water_content',
-            'dissolution': 'dissolution'
+            'dissolution': 'dissolution',
+            'concentration-table':'volumetric_concentration_poi',
+            'concentration-graph':'volumetric_concentration_poi'
         },
         
         nameToColorMap: {
@@ -137,6 +139,7 @@ define([
             'burned': 'rgb(225, 87, 89)',
             'boomed': 'rgb(50, 50, 50)',
             'floating': 'rgb(186, 176, 172)',
+            'volumetric_concentration_poi': 'rgb(186, 176, 172)',
         },
 
         initialize: function(options) {
@@ -626,6 +629,12 @@ define([
             else if (active === '#ics209') {
                 this.renderGraphICS(this.dataset);
             }
+            else if (active === '#concentration-graph') {
+                this.renderGraphConcentration(this.dataset);
+            }
+            else if (active === '#concentration-table') {
+                this.renderTableConcentration(this.dataset);
+            }
         },200),
 
         renderGraphOilBudget: function(dataset) {
@@ -642,7 +651,8 @@ define([
                 'dispersibility_difficult',
                 'dispersibility_unlikely',
                 'secondtime',
-                'systems'
+                'systems',
+                'volumetric_concentration_poi'
                 ]);
 
             var selection = this.$('.panel-primary').data('dataset');
@@ -703,7 +713,8 @@ define([
                 'dispersibility_difficult',
                 'dispersibility_unlikely',
                 'secondtime',
-                'systems'
+                'systems',
+                'volumetric_concentration_poi'
             ]);
 
             var data = this.getPieData(pos, dataset, this.$('#budget-graph .panel-primary').data('dataset'));
@@ -752,7 +763,8 @@ define([
                 'dispersibility_difficult',
                 'dispersibility_unlikely',
                 'systems',
-                'secondstime'
+                'secondstime',
+                'volumetric_concentration_poi'
                 ]);
             var lowData = this.getPieData(pos, dataset, 'low');
             var nominalData = this.getPieData(pos, dataset, 'nominal');
@@ -866,7 +878,8 @@ define([
                 'dispersibility_difficult',
                 'dispersibility_unlikely',
                 'secondtime',
-                'systems'
+                'systems',
+                'volumetric_concentration_poi'
                 ]);
             var table = this.$('#budget-table table:first');
             var display = {
@@ -1063,6 +1076,118 @@ define([
 
         printScreen: function(e) {
             window.print();
+        },
+
+        renderTableConcentration: function(dataset) {
+            if (!_.isArray(dataset)) {
+                dataset = _.clone(this.dataset);
+            }
+
+            var budgetRealValueFormat = function(value) {
+                if (value < 10) {
+                    value = Number(value).toFixed(2);
+                } else if (value < 100) {
+                    value = Number(value).toFixed(1);
+                } else {
+                    value = Math.round(value);
+                }
+                return value;
+            };
+
+            dataset = this.pluckDataset(dataset, [
+                'volumetric_concentration_poi'
+                ]);
+
+
+            var table = this.$('#concentration-table table:first');
+            table.html('');
+            table = '';
+            var m_date = moment(webgnome.model.get('start_time'));
+            var opacity;
+
+            for (var row = 0; row < dataset[0].data.length; row++) {
+                var ts_date = moment(dataset[0].data[row][0]);
+                var duration = moment.duration(ts_date.unix() - m_date.unix(), 'seconds');
+                var durationAsHrs = parseInt(duration.asHours(), 10);
+
+                if (/*ts_date.minutes() === 0 &&*/ (duration.asHours() < 7 ||
+                    duration.asHours() < 25 && duration.asHours() % 3 === 0 ||
+                    duration.asHours() < 49 && duration.asHours() % 6 === 0 ||
+                    duration.asHours() < 121 && duration.asHours() % 12 === 0 ||
+                    duration.asHours() > 121 && duration.asHours() % 24 === 0) &&
+                    (durationAsHrs === duration.asHours())) {
+
+                    if (opacity === 0.10) {
+                        opacity = 0.25;
+                    }
+                    else {
+                        opacity = 0.10;
+                    }
+
+                    var row_html = '';
+
+                    if (parseInt(row, 10) === 0) {
+                        row_html += '<thead><tr>';
+                    }
+                    else {
+                        row_html += '<tr class="' + row + '">';
+                    }
+
+                    //date time column
+                    if (row === 0) {
+                        row_html += '<th>Date <br>&nbsp</th>';
+                    }
+                    else {
+                        row_html += '<td>' + ts_date.format(webgnome.config.date_format.moment) + '</td>';
+                    }
+                    
+                    //concentration column
+                    for (var set in dataset) {
+                        if (row === 0) {
+                            row_html += '<th>' + dataset[set].label + '<br> (kg/m^3)</th>';
+                        }
+                        else {
+                            var value = dataset[set].data[row][1];
+                            row_html += '<td>' + budgetRealValueFormat(value) + '</td>';
+                        }
+                    }
+
+                    if (row === 0) {
+                        row_html += '</tr></thead>';
+                    }
+                    else {
+                        row_html += '</tr>';
+                    }
+
+                    table += row_html;
+                }
+            }
+
+            this.$('#concentration-table table:first').html(table);
+
+        },
+
+        renderGraphConcentration: function(dataset) {
+            dataset = this.pluckDataset(dataset, ['volumetric_concentration_poi', 'secondtime']);
+
+            if (dataset.length === 2) {
+                dataset[0].fillArea = [{representation: 'symmetric'}, {representation: 'asymmetric'}];
+
+                if (_.isUndefined(this.graphConcentration)) {
+                    var options = $.extend(true, {}, this.defaultChartOptions);
+                    options.colors = this.generateColorArray(dataset);
+                    this.graphConcentration = $.plot('#concentration-graph .timeline .chart .canvas', dataset, options);
+                }
+                else {
+                    this.graphConcentration.setData(dataset);
+                    this.graphConcentration.setupGrid();
+                    this.graphConcentration.draw();
+                }
+                dataset[0].fillArea = null;
+            }
+            else {
+                this.$('#concentration-graph .timeline .chart').text('Concentration is not available');
+            }
         },
 
         renderGraphEvaporation: function(dataset) {
@@ -1382,7 +1507,8 @@ define([
                 'water_viscosity',
                 'dispersibility_difficult',
                 'dispersibility_unlikely',
-                'systems'
+                'systems',
+                'volumetric_concentration_poi'
                 ]);
 
             var icsUnits = this.$('.vol-units').val();
@@ -1739,7 +1865,7 @@ define([
             if (!_.isUndefined(datasetName)) {
                 dataUnits = this.$('.tab-pane.active .yaxisLabel').html();
                 dataset = this.pluckDataset(webgnome.mass_balance, [datasetName])[0];
-                if (datasetName === 'avg_density') {
+                if (datasetName === 'avg_density' || datasetName === 'volumetric_concentration_poi') {
                     dataUnits = "kg/m^3";
                 }
                 else if (datasetName === 'avg_viscosity') {
@@ -1800,7 +1926,7 @@ define([
             var tableHTML = this.tableToHTML(this.$(tabName + ' table'));
             var filename = webgnome.model.get('name') + '_';
 
-            if (this.$(tabName + ' table').length !== 0) {
+            if (this.$(tabName + ' table.table').length !== 0) {
                 content = modelInfo + tableHTML;
                 var source = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
                 this.downloadContent(source, filename + tabName.substring(1) + '.html');

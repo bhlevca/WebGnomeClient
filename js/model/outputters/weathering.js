@@ -12,7 +12,8 @@ define([
             'output_timestep': null,
             'output_last_step': 'true',
             'output_zero_step': 'true',
-            'name': 'WeatheringOutput'
+            'name': 'WeatheringOutput',
+            'surface_conc': 'kde'
         },
 
         toTree: function(){

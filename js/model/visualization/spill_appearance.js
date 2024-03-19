@@ -66,6 +66,51 @@ define([
                                 "colorBlockLabels": ['Light', 'Medium', 'Heavy'],
                                 },
                             },
+                            {name: 'Bonn Agreement Appearance',
+                            data: 'Volumetric Concentration',
+                            units: 'g/m^3',
+                            colormap: {
+                               "units": 'g/m^3',
+                               "numberScaleType": "log",
+                               "numberScaleDomain": [0.0001,0.25],
+                               "numberScaleRange": [0,1],
+                               "colorScaleType": "threshold",
+                               "colorScaleDomain": [0.001, 0.005, 0.01, 0.025, 0.05, 0.1],
+                               "colorScaleRange": ["#1f77b4", "#2ca02c", "#bcbd22", "#ff7f0e", "#d62728", "#654321", "#000000"],
+                               "scheme": "Custom",
+                               "colorBlockLabels": ['Silver (<1)','Rainbow (<5)','Metallic (<10)','Metallic (<25)','Metallic (<50)','Dark (<100)','Dark (>100)'],
+                               },
+                           },
+                           {name: 'Response Relevant',
+                            data: 'Volumetric Concentration',
+                            units: 'g/m^3',
+                            colormap: {
+                               "units": 'g/m^3',
+                               "numberScaleType": "log",
+                               "numberScaleDomain": [0.0001,0.25],
+                               "numberScaleRange": [0,1],
+                               "colorScaleType": "threshold",
+                               "colorScaleDomain": [0.05, 0.1],
+                               "colorScaleRange": ["#fdbea0", "#fb6b40", "#b5211c"],
+                               "scheme": "Reds",
+                               "colorBlockLabels": ['Light', 'Medium', 'Heavy'],
+                               },
+                           },
+                           {name: 'Biologically Relevant',
+                            data: 'Volumetric Concentration',
+                            units: 'g/m^3',
+                            colormap: {
+                               "units": 'g/m^3',
+                               "numberScaleType": "log",
+                               "numberScaleDomain": [0.0001,0.05],
+                               "numberScaleRange": [0,1],
+                               "colorScaleType": "threshold",
+                               "colorScaleDomain": [0.001, 0.01],
+                               "colorScaleRange": ["#fdbea0", "#fb6b40", "#b5211c"],
+                               "scheme": "Reds",
+                               "colorBlockLabels": ['Light', 'Medium', 'Heavy'],
+                               },
+                           },
 /*                             {name: 'Response Relevant',
                              data: 'Viscosity',
                              units: 'cst',
@@ -103,6 +148,7 @@ define([
                          },
             _available_data: ['Mass',
                               'Surface Concentration',
+                              'Volumetric Concentration',
                               'Age',
                               'Viscosity']
                               //Depth
@@ -131,6 +177,9 @@ define([
             }
             else if (data === 'Surface Concentration') {
                 newUnits = 'g/m^2';
+            }
+            else if (data === 'Volumetric Concentration') {
+                newUnits = 'g/m^3';
             }
             else if (data === 'Age') {
                 newUnits = 'hrs';
@@ -241,6 +290,32 @@ define([
                     return value; //Number(value).toPrecision(3);
                 }, this);
             }
+            else if (data ==='Volumetric Concentration') {
+                //Convert to and from percentages
+                fromInput = _.bind(function(value) {
+                    //return nucos.Converters.length.Convert(newUnits, 'kg/m^2', value);
+                    // Nucos doesn't support these units, so do manually
+                    if (newUnits === 'kg/m^3'){
+                        return value;
+                    } else {
+                        return value / 1000;
+                    }
+                }, this);
+
+                toDisplay = _.bind(function(value) {
+                    //surf_conc->percentage
+                    //value = nucos.Converters.length.Convert('kg/m^2', newUnits, value);
+                    var maxconc = colormap.get('numberScaleDomain')[1];
+                    if (newUnits !== 'kg/m^3'){
+                        value = value * 1000;
+                        maxconc = maxconc * 1000;
+                    }
+                    var percent = (Number(value / maxconc * 100)
+                                   .toPrecision(3));
+                    //return percent + "%\n" + Number(value).toPrecision(3);
+                    return value; //Number(value).toPrecision(3);
+                }, this);
+            }
             else {
                 fromInput = function(value) {return value;};
                 toDisplay = function(value) {return value;};
@@ -255,7 +330,7 @@ define([
             var output = (webgnome.model.get('outputters')
                           .findWhere({obj_type: 'gnome.outputters.json.SpillJsonOutput'}));
 
-            if (dtype.get('data') !== 'Viscosity' && dtype.get('data') !== 'Surface Concentration') {
+            if (dtype.get('data') !== 'Viscosity' && dtype.get('data') !== 'Surface Concentration' && dtype.get('data') !== 'Volumetric Concentration') {
                 this.get('colormap').set('numberScaleType', 'linear');
             }
 

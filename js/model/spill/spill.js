@@ -119,7 +119,7 @@ define([
                     max = webgnome.model.get('num_time_steps') * webgnome.model.get('time_step');
                     newScaleType = 'linear';
                 }
-                else if (data === 'Surface Concentration') {
+                else if (data === 'Surface Concentration' || data === 'Volumetric Concentration') {
                     min = 0.0001;
                     max = this.estimateMaxConcentration();
                     newScaleType = 'log';

@@ -188,6 +188,21 @@ define([
                 if (json_response) {                    
                     var stopTimer = false;
                     if(json_response.obj_type){
+                        //use the netcdf filename to get the dfsu file name and set it to SpillJsonOutput and WeatheringOutput.
+                        //the file name should follow a certain convension.
+                        //SpillJsonOutput is used for map display. The concentration is only calculated when the display of the spill is set as volumetric concentration.
+                        //WeatheringOutput is used for graphing. This is not the best place but would would allow reuse of the UI components for table and chart display.
+                        var dfsu_file_path = json_response.filename.replace('.nc','.dfsu');
+                        var output = (webgnome.model.get('outputters').findWhere({obj_type: 'gnome.outputters.json.SpillJsonOutput'}));
+                        output.set('water_depth_dfsu_file', dfsu_file_path);
+                        output._updateRequestedDataTypes(dtype);
+
+                        var output = (webgnome.model.get('outputters').findWhere({obj_type: 'gnome.outputters.weathering.WeatheringOutput'}));
+                        output.set('surface_conc','kde')
+                        output.set('water_depth_dfsu_file', dfsu_file_path);                        
+                        output.save()
+                        
+                        //add the mover
                         var mover = new PyCurrentMover(json_response, {parse: true});
                         webgnome.model.get('movers').add(mover);
                         webgnome.model.get('environment').add(mover.get('current'));

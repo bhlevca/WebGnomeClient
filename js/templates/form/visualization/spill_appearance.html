@@ -46,6 +46,9 @@
                 {% } else if (model.get('data') === 'Surface Concentration') { %}
                     <option value="g/m^2" {{'g/m^2' === model.get('units') ? "selected=true" : ""}}>g/m^2</option>
                     <option value="kg/m^2" {{'kg/m^2' === model.get('units') ? "selected=true" : ""}}>kg/m^2</option>
+                {% } else if (model.get('data') === 'Volumetric Concentration') { %}
+                    <option value="g/m^2" {{'g/m^3' === model.get('units') ? "selected=true" : ""}}>g/m^3</option>
+                    <option value="kg/m^2" {{'kg/m^3' === model.get('units') ? "selected=true" : ""}}>kg/m^3</option>
                 {% } else if (model.get('data') === 'Age') { %}
                     <option value='hr' {{'hr' === model.get('units') ? "selected=true" : ""}}>hours</option>
                     <option value='sec' {{'sec' === model.get('units') ? "selected=true" : ""}}>seconds</option>
