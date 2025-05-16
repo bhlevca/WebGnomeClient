@@ -9,10 +9,10 @@
 			"fileName": "gruntfile.js",
 			"uri": {
 				"$mid": 1,
-				"fsPath": "c:\\MECP\\WebGnome\\WebGnomeClient\\gruntfile.js",
+				"fsPath": "c:\\WebGnome\\repo\\WebGnomeClient\\gruntfile.js",
 				"_sep": 1,
-				"external": "file:///c%3A/MECP/WebGnome/WebGnomeClient/gruntfile.js",
-				"path": "/c:/MECP/WebGnome/WebGnomeClient/gruntfile.js",
+				"external": "file:///c%3A/WebGnome/WebGnomeClient/repo/gruntfile.js",
+				"path": "/c:/WebGnome/repo/WebGnomeClient/gruntfile.js",
 				"scheme": "file"
 			},
 			"problemMatcher": [
